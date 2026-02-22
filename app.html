@@ -3,90 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENFOCADOS - PRUEBAS</title>
+    <title>ENFOCADOS - SISTEMA DE TEST (PRUEBAS)</title>
     <style>
-        body { font-family: sans-serif; background: #fff9c4; display: flex; justify-content: center; padding: 40px 20px; }
-        .card { background: white; padding: 30px; border-radius: 15px; border: 3px solid #facc15; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        h1 { color: #2c3e50; margin-bottom: 5px; font-size: 2rem; }
-        input { width: 100%; padding: 12px; margin: 20px 0; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        button { width: 100%; padding: 14px; background: #facc15; color: #2c3e50; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 1rem; }
-        button:disabled { background: #e2e8f0; cursor: not-allowed; }
-        #status { margin-top: 15px; font-size: 0.85rem; color: #64748b; min-height: 20px; }
-        .error { color: #ef4444; font-weight: bold; }
-        .hidden { display: none; }
+        :root { --y: #facc15; --d: #2c3e50; --bg: #fff9c4; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; color: var(--d); }
+        .card { background: white; padding: 30px; border-radius: 20px; border: 3px solid var(--y); width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        h1 { margin-bottom: 10px; font-weight: 800; }
+        .tag { background: var(--d); color: white; padding: 4px 10px; border-radius: 5px; font-size: 0.7rem; font-weight: bold; margin-bottom: 15px; display: inline-block; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: var(--y); color: var(--d); border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 10px; }
+        button:disabled { background: #cbd5e1; cursor: not-allowed; }
+        .hidden { display: none !important; }
+        #status { margin-top: 15px; font-size: 0.85rem; color: #64748b; }
+        .error { color: #ef4444; font-weight: bold; background: #fee2e2; padding: 10px; border-radius: 8px; margin-top: 10px; }
+        .materia-item { text-align: left; padding: 8px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 10px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div style="background:#2c3e50; color:white; font-size:0.7rem; padding:3px; border-radius:4px; display:inline-block; margin-bottom:10px;">STAGING / MODO PRUEBAS</div>
+    <div class="tag">ENTORNO DE PRUEBAS / STAGING</div>
     <h1>ENFOCADOS</h1>
-    
+
     <div id="secLogin">
-        <p>Introduce tu correo de prueba</p>
-        <input type="email" id="inEmail" placeholder="tu@email.com">
+        <p>Acceso con correo de prueba</p>
+        <input type="email" id="inEmail" placeholder="tu@correo.com">
         <button id="btnLogin" onclick="doLogin()">ENTRAR AL SISTEMA</button>
         <div id="status"></div>
     </div>
 
     <div id="secConfig" class="hidden">
-        <h2 style="color: #10b981;">✓ Acceso Correcto</h2>
-        <p id="welcomeMsg"></p>
-        <div style="background:#f1f5f9; padding:15px; border-radius:10px; margin:15px 0; text-align:left;">
-            <strong>Estado:</strong> Conectado a la Base de Datos.
+        <h2 id="welcomeMsg">¡Hola!</h2>
+        <p style="font-size: 0.9rem; margin-bottom: 15px;">Configura tu examen de prueba:</p>
+        
+        <div style="text-align: left; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px;">Materias disponibles:</div>
+        <div id="matsList" style="max-height: 150px; overflow-y: auto; background: #f8fafc; border-radius: 10px; padding: 10px; border: 1px solid #e2e8f0;">
+            </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <div style="flex:1">
+                <label style="font-size: 0.7rem; font-weight: bold; display: block; text-align: left;">PREGUNTAS</label>
+                <input type="number" id="numQ" value="10" min="5" max="100">
+            </div>
+            <div style="flex:1">
+                <label style="font-size: 0.7rem; font-weight: bold; display: block; text-align: left;">FEEDBACK</label>
+                <select id="modeFB">
+                    <option value="con">Inmediato</option>
+                    <option value="sin">Al final</option>
+                </select>
+            </div>
         </div>
-        <button onclick="location.reload()" style="background:#e2e8f0">CERRAR SESIÓN</button>
-    </div>
-</div>
 
-<script>
-// URL de tu Script de Google confirmada
-const apiUrl = 'https://script.google.com/macros/s/AKfycbwzQPNahJxw8YTLln-O9WaAkXoH3Vd0h7sFgugRxHX8bIEfasezvzl6ZvEENiTJMWKF/exec';
-
-function fetchJSONP(url, callback) {
-    const callbackName = 'jsonp_' + Math.round(100000 * Math.random());
-    window[callbackName] = function(data) {
-        delete window[callbackName];
-        const oldScript = document.getElementById(callbackName);
-        if (oldScript) oldScript.remove();
-        callback(data);
-    };
-
-    const script = document.createElement('script');
-    script.id = callbackName;
-    // Agregamos t=Date.now para evitar el caché del navegador que causa errores de conexión
-    script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName + '&t=' + Date.now();
-    
-    script.onerror = () => {
-        document.getElementById('status').innerHTML = '<span class="error">Error de conexión. Verifica que el script esté publicado como "Cualquier persona".</span>';
-        document.getElementById('btnLogin').disabled = false;
-        document.getElementById('btnLogin').textContent = "REINTENTAR ENTRAR";
-    };
-    document.body.appendChild(script);
-}
-
-function doLogin() {
-    const email = document.getElementById('inEmail').value.trim().toLowerCase();
-    const btn = document.getElementById('btnLogin');
-    const status = document.getElementById('status');
-
-    if (!email) {
-        alert("Por favor, escribe tu email.");
-        return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = "VERIFICANDO...";
-    status.textContent = "Conectando con Google Sheets...";
-
-    // Llamada al script para buscar usuarios
-    fetchJSONP(apiUrl + '?type=users', function(res) {
-        if (!res || !res.rows) {
-            status.innerHTML = '<span class="error">Error: No se recibieron datos. Revisa permisos del script.</span>';
-            btn.disabled = false;
-            btn.textContent = "ENTRAR AL SISTEMA";
-            return;
-        }
-
-        const headers = res.headers.map(h => h.toLowerCase().trim());
-        const email
+        <button id="btnStart" onclick="startTest()">INICIAR EXAMEN DE PRUEBA</button>
+        <button onclick="location.reload()" style="background: none; color: #64748b; font-
