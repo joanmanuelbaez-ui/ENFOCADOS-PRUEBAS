@@ -3,29 +3,131 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ENFOCADOS - STAGING (PRUEBAS)</title>
+<title>ENFOCADOS - STAGING</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* --- ESTILOS UNIFICADOS --- */
+/* --- ESTILOS --- */
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--Y:rgb(250,250,0);--Yd:rgb(215,215,0);--D:#2c3e50;--D2:#1a252f;--V:#10b981;--R:#ef4444;--G:#64748b;--B:#e2e8f0;--W:#f59e0b}
-body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,#fffef0 0%,#fff9c4 100%);min-height:100vh;color:#1e293b;line-height:1.6}
+body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,#fffef0 0%,#fff9c4 100%);min-height:100vh;color:#1e293b}
 .wrap{max-width:860px;margin:0 auto;padding:1.8rem 1.2rem}
 header{text-align:center;margin-bottom:1.6rem}
-header svg{display:block;margin:0 auto .4rem}
-h1{font-family:'Montserrat',sans-serif;font-size:2.8rem;font-weight:800;color:var(--D);letter-spacing:-1px}
-.sub{color:var(--G);font-size:1rem;font-weight:500;text-transform:uppercase;letter-spacing:1px}
+h1{font-family:'Montserrat',sans-serif;font-size:2.8rem;font-weight:800;color:var(--D)}
 .card{background:#fff;border-radius:18px;padding:2rem;box-shadow:0 4px 24px rgba(0,0,0,.08);border:2px solid var(--Y);margin-bottom:1.4rem}
-.field{margin-bottom:1.1rem;text-align:left}
-.field label{display:block;margin-bottom:.3rem;color:var(--D);font-weight:600;font-size:.9rem}
-.field input, .field select{width:100%;padding:.82rem 1rem;border:2px solid var(--B);border-radius:10px;font-size:1rem;font-family:inherit}
-.btn{padding:.88rem 1.5rem;background:var(--Y);color:var(--D);border:none;border-radius:10px;font-size:1.05rem;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all .2s;box-shadow:0 3px 8px rgba(250,250,0,0.3)}
-.btn:hover:not(:disabled){background:var(--Yd);transform:translateY(-1px)}
-.btn:disabled{background:#cbd5e1;color:#94a3b8;cursor:not-allowed;box-shadow:none}
-.btn-alt{background:#fff;border:2px solid var(--Y);color:var(--D)}
-.btn-outline{border: 2px solid var(--D); color: var(--D); margin-top: 15px}
-.btn-danger{background:var(--Y); color:var(--D); border: 2px solid var(--D); box-shadow: 0 3px 8px rgba(0,0,0,0.1); margin-top: 10px}
-.error-banner{background:#fee2e2;color:#b91c1c;padding:1rem;border-radius:10px;margin-bottom:1rem;border:1px solid #f87171;font-size:0.9rem;display:none;text-align:center}
-.ubar{background:linear-gradient(135deg,var(--Y),rgb(255,255,100));padding:.78rem 1.1rem;border-radius:10px;display:flex;justify-content:space-between;align-items:center;margin-bottom:1.4rem;font-weight:600}
+.field{margin-bottom:1.1rem}
+.field label{display:block;margin-bottom:.3rem;font-weight:600}
+.field input, .field select{width:100%;padding:.8rem;border:2px solid var(--B);border-radius:10px;font-size:1rem}
+.btn{width:100%;padding:.9rem;background:var(--Y);color:var(--D);border:none;border-radius:10px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:.2s}
+.btn:disabled{background:#cbd5e1;cursor:not-allowed}
+.error-banner{background:#fee2e2;color:#b91c1c;padding:1rem;border-radius:10px;margin-bottom:1rem;border:1px solid #f87171;display:none;text-align:center}
+.ubar{background:linear-gradient(135deg,var(--Y),rgb(255,255,100));padding:1rem;border-radius:10px;display:flex;justify-content:space-between;margin-bottom:1.4rem;font-weight:700}
 .multi-box{border:2px solid var(--B);border-radius:10px;padding:10px;max-height:200px;overflow-y:auto;background:#f8fafc}
-.m-item{display:flex;align-items:center;padding:8px;gap:10px;cursor:pointer;border-bottom:1px solid #edf2f7;font-size:0
+.m-item{display:flex;align-items:center;padding:8px;gap:10px;border-bottom:1px solid #edf2f7}
+.qhdr{display:flex;justify-content:space-between;margin-bottom:1rem;border-bottom:2px solid var(--Y)}
+.pbar-bg{background:var(--B);height:6px;margin-bottom:1.2rem;border-radius:3px;overflow:hidden}
+.pbar{background:var(--Y);height:100%;width:0%;transition:width .3s}
+.opt{display:flex;align-items:center;gap:.8rem;padding:1rem;border:2px solid var(--B);border-radius:11px;cursor:pointer;margin-bottom:10px}
+.opt.ok{border-color:var(--V);background:#f0fdf4}
+.opt.ko{border-color:var(--R);background:#fef2f2}
+.oltr{width:30px;height:30px;border-radius:50%;background:var(--B);display:flex;align-items:center;justify-content:center;font-weight:700}
+.fb{margin-top:1.3rem;padding:1.2rem;border-radius:10px;border-left:4px solid}
+.fb.ok{background:#f0fdf4;border-color:var(--V)}
+.fb.ko{background:#fef2f2;border-color:var(--R)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+    <header>
+        <h1>ENFOCADOS</h1>
+        <div style="color:var(--G); font-weight:bold; font-size:0.8rem">ENTORNO DE PRUEBAS</div>
+    </header>
+
+    <div id="errBanner" class="error-banner"></div>
+
+    <div id="secLogin" class="card">
+        <h2 style="text-align:center;margin-bottom:1.5rem">Acceso Alumno</h2>
+        <div class="field">
+            <label>Email registrado</label>
+            <input type="email" id="inEmail" placeholder="tu@email.com">
+        </div>
+        <button id="btnLogin" class="btn" onclick="doLogin()">Entrar al Sistema</button>
+    </div>
+
+    <div id="secConfig" class="card hidden">
+        <div class="ubar"><span id="cfgUser"></span><span onclick="location.reload()" style="cursor:pointer">SALIR</span></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px">
+            <div class="field">
+                <label>Nº Preguntas</label>
+                <input type="number" id="inNum" value="10" min="5">
+            </div>
+            <div class="field">
+                <label>Explicaciones</label>
+                <select id="inFeedback">
+                    <option value="con">Activadas</option>
+                    <option value="sin">Desactivadas</option>
+                </select>
+            </div>
+        </div>
+        <div class="field">
+            <label>Materias</label>
+            <div id="multiMat" class="multi-box"></div>
+        </div>
+        <button id="btnStart" class="btn" onclick="startExam()">Comenzar Test</button>
+    </div>
+
+    <div id="secQ" class="card hidden">
+        <div class="qhdr"><span id="qNum"></span><span id="qProg"></span></div>
+        <div class="pbar-bg"><div id="pBar" class="pbar"></div></div>
+        <div id="qTxt" style="font-size:1.1rem;font-weight:600;margin-bottom:1.5rem"></div>
+        <div id="optsWrap"></div>
+        <div id="fbWrap"></div>
+        <div style="display:flex; gap:10px; margin-top:1.5rem">
+            <button class="btn" style="background:var(--B)" onclick="prevQ()">Anterior</button>
+            <button id="btnNext" class="btn" onclick="nextQ()">Siguiente</button>
+        </div>
+    </div>
+
+    <div id="secRes" class="card hidden" style="text-align:center">
+        <h2>Resultado</h2>
+        <div id="rPct" style="font-size:4rem;font-weight:800;margin:1rem 0"></div>
+        <div id="resDetalle" style="margin-bottom:2rem"></div>
+        <button class="btn" onclick="location.reload()">Nuevo Test</button>
+    </div>
+</div>
+
+<script>
+// URL actualizada con tu nueva implementación
+const apiUrl = 'https://script.google.com/macros/s/AKfycbwMfcGPg0LUHYV-n28R90oBZX6EIY7iEdWuTgLADe7YkuB9dVzokVOF4LoHusR5_mdY/exec';
+
+let allQuestions = [], exam = [], idx = 0, userAnswers = [], showInstantFeedback = true;
+
+// Función para conectar con Google Apps Script (JSONP)
+function fetchGAS(type) {
+    return new Promise((resolve, reject) => {
+        const callbackName = 'callback_' + Math.round(100000 * Math.random());
+        const script = document.createElement('script');
+        
+        window[callbackName] = function(data) {
+            delete window[callbackName];
+            script.remove();
+            resolve(data);
+        };
+
+        script.src = `${apiUrl}?type=${type}&callback=${callbackName}&t=${Date.now()}`;
+        script.onerror = () => reject(new Error("Error de conexión con el servidor"));
+        document.body.appendChild(script);
+        
+        setTimeout(() => reject(new Error("Tiempo de espera agotado")), 15000);
+    });
+}
+
+// Lógica de Login
+async function doLogin() {
+    const email = document.getElementById('inEmail').value.trim().toLowerCase();
+    const btn = document.getElementById('btnLogin');
+    const banner = document.getElementById('errBanner');
+
+    if (!email) return;
+    banner.style.display = 'none';
