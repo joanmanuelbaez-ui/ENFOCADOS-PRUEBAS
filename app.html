@@ -5,101 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ENFOCADOS PRUEBAS</title>
     <style>
-        body { font-family: sans-serif; background: #fff9c4; text-align: center; padding: 50px; }
+        body { font-family: sans-serif; background: #fff9c4; text-align: center; padding: 50px; color: #2c3e50; }
         .box { background: white; padding: 30px; border-radius: 20px; border: 3px solid #facc15; max-width: 400px; margin: auto; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: #facc15; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .error { color: red; margin-top: 10px; font-size: 0.8rem; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 15px; background: #facc15; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        button:disabled { background: #cbd5e1; cursor: not-allowed; }
+        #msg { margin-top: 15px; font-size: 0.9rem; min-height: 20px; }
+        .error { color: #ef4444; font-weight: bold; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
 <div class="box">
+    <div style="background:#2c3e50; color:white; font-size:0.7rem; padding:3px; border-radius:4px; display:inline-block; margin-bottom:10px;">MODO STAGING</div>
     <h1>ENFOCADOS</h1>
-    <p>Entorno de Pruebas</p>
-
+    
     <div id="loginArea">
-        <input type="email" id="uEmail" placeholder="Introduce tu email">
+        <p>Introduce tu email para la prueba</p>
+        <input type="email" id="uEmail" placeholder="ejemplo@correo.com">
         <button id="btn" onclick="iniciarLogin()">ENTRAR AL SISTEMA</button>
-        <p id="msg"></p>
+        <div id="msg"></div>
     </div>
 
     <div id="configArea" class="hidden">
-        <h2 style="color:green">¡Acceso Correcto!</h2>
-        <p>Cargando materias...</p>
-        <div id="listaMaterias" style="text-align:left; background:#f0f0f0; padding:10px; border-radius:5px"></div>
+        <h2 style="color:#10b981">✓ Acceso Correcto</h2>
+        <p>Materias detectadas en la base de datos:</p>
+        <div id="listaMaterias" style="text-align:left; background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0; margin-top:10px;"></div>
+        <button onclick="location.reload()" style="background:#e2e8f0; margin-top:15px; color:#475569">CERRAR SESIÓN</button>
     </div>
 </div>
 
 <script>
-// URL limpia del script
 const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbwzQPNahJxw8YTLln-O9WaAkXoH3Vd0h7sFgugRxHX8bIEfasezvzl6ZvEENiTJMWKF/exec';
 
 function iniciarLogin() {
-    const email = document.getElementById('uEmail').value.trim().toLowerCase();
+    const emailInput = document.getElementById('uEmail');
+    const emailValue = emailInput.value.trim().toLowerCase();
     const msg = document.getElementById('msg');
     const btn = document.getElementById('btn');
 
-    if(!email) { alert("Escribe un email"); return; }
+    if(!emailValue) {
+        alert("Por favor, escribe un email.");
+        return;
+    }
 
+    // Feedback visual inmediato
     btn.disabled = true;
-    btn.innerText = "VERIFICANDO...";
-    msg.innerText = "Conectando con Google Sheets...";
+    btn.innerText = "CONECTANDO...";
+    msg.innerHTML = "Consultando Google Sheets...";
 
-    // Llamada JSONP
+    // Creamos la llamada JSONP
     const script = document.createElement('script');
-    const callbackName = 'callback_' + Math.round(Math.random() * 10000);
+    const cbName = 'cb_' + Date.now();
     
-    window[callbackName] = function(data) {
-        delete window[callbackName];
+    window[cbName] = function(data) {
+        delete window[cbName];
         document.body.removeChild(script);
-        procesarRespuesta(data, email);
+        
+        if (!data || !data.headers) {
+            msg.innerHTML = '<span class="error">Error: No se reciben datos del servidor.</span>';
+            btn.disabled = false;
+            btn.innerText = "REINTENTAR";
+            return;
+        }
+
+        // Buscamos la columna CORREO o correo
+        const headers = data.headers.map(h => h.toString().toUpperCase().trim());
+        const emailIdx = headers.indexOf('CORREO');
+
+        if (emailIdx === -1) {
+            msg.innerHTML = '<span class="error">Error: No existe la columna "CORREO" en el Excel.</span>';
+            btn.disabled = false;
+            return;
+        }
+
+        // Buscamos al usuario
+        const encontrado = data.rows.find(r => r[emailIdx] && r[emailIdx].toString().toLowerCase().trim() === emailValue);
+
+        if (encontrado) {
+            msg.innerText = "¡Validado! Cargando banco de preguntas...";
+            cargarPreguntas();
+        } else {
+            msg.innerHTML = '<span class="error">El correo no está en la hoja de ALUMNOS ACTIVOS.</span>';
+            btn.disabled = false;
+            btn.innerText = "ENTRAR";
+        }
     };
 
-    script.src = URL_SCRIPT + '?type=users&callback=' + callbackName + '&t=' + Date.now();
+    script.src = URL_SCRIPT + '?type=users&callback=' + cbName + '&t=' + Date.now();
     script.onerror = () => {
-        msg.innerHTML = '<b class="error">Error de red: El Script de Google no responde.</b>';
+        msg.innerHTML = '<span class="error">Error de red. El script de Google no responde.</span>';
         btn.disabled = false;
         btn.innerText = "REINTENTAR";
     };
     document.body.appendChild(script);
 }
 
-function procesarRespuesta(res, email) {
-    const msg = document.getElementById('msg');
-    const btn = document.getElementById('btn');
-    
-    // Buscar email en la columna 'correo' (asumiendo que es la segunda columna o tiene ese encabezado)
-    const headers = res.headers.map(h => h.toLowerCase().trim());
-    const emailIdx = headers.indexOf('correo');
-    
-    const usuario = res.rows.find(r => r[emailIdx] && r[emailIdx].toLowerCase().trim() === email);
-
-    if(usuario) {
-        msg.innerText = "Usuario validado. Trayendo preguntas...";
-        cargarPreguntas();
-    } else {
-        msg.innerHTML = '<b class="error">Email no encontrado en la base de datos de pruebas.</b>';
-        btn.disabled = false;
-        btn.innerText = "ENTRAR";
-    }
-}
-
 function cargarPreguntas() {
     const scriptQ = document.createElement('script');
-    const cbQ = 'cbQ_' + Math.round(Math.random() * 10000);
+    const cbQ = 'cbQ_' + Date.now();
     
     window[cbQ] = function(data) {
-        const materias = [...new Set(data.rows.map(r => r[3]))]; // Asumiendo que materia es col 4
+        delete window[cbQ];
+        // Asumimos que la materia está en la columna 4 (índice 3)
+        const materias = [...new Set(data.rows.map(r => r[3]))].filter(m => m);
+        
         document.getElementById('loginArea').classList.add('hidden');
         document.getElementById('configArea').classList.remove('hidden');
         
         const lista = document.getElementById('listaMaterias');
-        materias.forEach(m => { if(m) lista.innerHTML += '<div>• ' + m + '</div>'; });
+        materias.forEach(m => {
+            lista.innerHTML += '<div style="margin-bottom:5px; border-bottom:1px solid #eee; padding-bottom:3px;">• ' + m + '</div>';
+        });
     };
 
-    scriptQ.src = URL_SCRIPT + '?type=questions&callback=' + cbQ;
+    scriptQ.src = URL_SCRIPT + '?type=questions&callback=' + cbQ + '&t=' + Date.now();
     document.body.appendChild(scriptQ);
 }
 </script>
