@@ -6,7 +6,7 @@
 <title>ENFOCADOS - Plataforma de Pruebas</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* --- ESTILOS PROFESIONALES --- */
+/* --- ESTILOS --- */
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--Y:rgb(250,250,0);--Yd:rgb(215,215,0);--D:#2c3e50;--V:#10b981;--R:#ef4444;--G:#64748b;--B:#e2e8f0}
 body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,#fffef0 0%,#fff9c4 100%);min-height:100vh;color:#1e293b}
@@ -23,9 +23,164 @@ h1{font-family:'Montserrat',sans-serif;font-size:2.8rem;font-weight:800;color:va
 .ubar{background:var(--D);color:white;padding:1rem;border-radius:10px;display:flex;justify-content:space-between;margin-bottom:1.4rem}
 .multi-box{border:2px solid var(--B);border-radius:10px;padding:10px;max-height:200px;overflow-y:auto;background:#f8fafc}
 .m-item{display:flex;align-items:center;padding:8px;gap:10px;border-bottom:1px solid #edf2f7;cursor:pointer}
-.opt{display:flex;align-items:center;gap:.8rem;padding:1rem;border:2px solid var(--B);border-radius:11px;cursor:pointer;margin-bottom:10px;background:white;transition:0.2s}
-.opt:hover{border-color:var(--G)}
-.opt.selected{border-color:var(--D);background:#f8fafc}
+.opt{display:flex;align-items:center;gap:.8rem;padding:1rem;border:2px solid var(--B);border-radius:11px;cursor:pointer;margin-bottom:10px;background:white}
 .opt.ok{border-color:var(--V);background:#f0fdf4}
 .opt.ko{border-color:var(--R);background:#fef2f2}
-.oltr{width:30px;height:30px;border
+.oltr{width:30px;height:30px;border-radius:50%;background:var(--B);display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.fb{margin-top:1.3rem;padding:1.2rem;border-radius:10px;border-left:4px solid}
+.fb.ok{background:#f0fdf4;border-color:var(--V)}
+.fb.ko{background:#fef2f2;border-color:var(--R)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+    <header><h1>ENFOCADOS</h1><p>MODO PRUEBAS</p></header>
+    <div id="errBanner" class="error-banner"></div>
+
+    <div id="secLogin" class="card">
+        <h2 style="text-align:center;margin-bottom:1.5rem">Acceso Alumno</h2>
+        <div class="field"><label>Email</label><input type="email" id="inEmail" placeholder="tu@email.com"></div>
+        <button id="btnLogin" class="btn" onclick="doLogin()">Entrar</button>
+    </div>
+
+    <div id="secConfig" class="card hidden">
+        <div class="ubar"><span id="cfgUser"></span><span onclick="location.reload()" style="cursor:pointer">SALIR</span></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px">
+            <div class="field"><label>Nº Preguntas</label><input type="number" id="inNum" value="10"></div>
+            <div class="field"><label>Explicaciones</label><select id="inFeedback"><option value="con">Activadas</option><option value="sin">Desactivadas</option></select></div>
+        </div>
+        <div class="field"><label>Materias</label><div id="multiMat" class="multi-box"></div></div>
+        <button id="btnStart" class="btn" onclick="startExam()">Empezar Test</button>
+    </div>
+
+    <div id="secQ" class="card hidden">
+        <div id="qTxt" style="font-size:1.1rem;font-weight:600;margin-bottom:1.5rem"></div>
+        <div id="optsWrap"></div>
+        <div id="fbWrap"></div>
+        <div style="display:flex; gap:10px; margin-top:1.5rem">
+            <button class="btn" style="background:var(--B)" onclick="prevQ()">Anterior</button>
+            <button id="btnNext" class="btn" onclick="nextQ()">Siguiente</button>
+        </div>
+    </div>
+
+    <div id="secRes" class="card hidden" style="text-align:center">
+        <h2>Resultado</h2>
+        <div id="rPct" style="font-size:4rem;font-weight:800;margin:1rem 0"></div>
+        <button class="btn" onclick="location.reload()">Nuevo Test</button>
+    </div>
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbw9MQnIJS-S0TEvukVEeHPAm11lKca1-c6BuT4V7ZqMr1X93m7P7Q5izKlXiSyrdHIz/exec';
+
+let allQuestions = [], exam = [], idx = 0, userAnswers = [], showInstantFeedback = true;
+
+function callGAS(type) {
+    return new Promise((resolve, reject) => {
+        const cb = 'jsonp_' + Math.round(Math.random() * 1000000);
+        const s = document.createElement('script');
+        window[cb] = (data) => { delete window[cb]; s.remove(); resolve(data); };
+        s.src = `${API}?type=${type}&callback=${cb}&t=${Date.now()}`;
+        s.onerror = () => reject(new Error("Error de conexión"));
+        document.head.appendChild(s);
+        setTimeout(() => { if(window[cb]) reject(new Error("Tiempo agotado")); }, 20000);
+    });
+}
+
+async function doLogin() {
+    const email = document.getElementById('inEmail').value.trim().toLowerCase();
+    const btn = document.getElementById('btnLogin');
+    const banner = document.getElementById('errBanner');
+    if(!email) return;
+    btn.disabled = true; btn.innerText = "Verificando..."; banner.style.display = 'none';
+
+    try {
+        const resU = await callGAS('users');
+        const users = resU.rows.map(r => {
+            let o = {}; resU.headers.forEach((h, i) => o[h.toLowerCase().trim()] = r[i]);
+            return o;
+        });
+        const user = users.find(u => Object.values(u).some(v => String(v).toLowerCase().trim() === email));
+        if(!user) throw new Error("Email no autorizado");
+
+        const resQ = await callGAS('questions');
+        allQuestions = resQ.rows.map(r => {
+            let o = {}; resQ.headers.forEach((h, i) => o[h.toLowerCase().trim()] = r[i]);
+            return o;
+        });
+
+        document.getElementById('cfgUser').innerText = (user.usuario || "ALUMNO").toUpperCase();
+        setupMats();
+        showScreen('secConfig');
+    } catch(e) {
+        banner.innerText = e.message; banner.style.display = 'block';
+        btn.disabled = false; btn.innerText = "Entrar";
+    }
+}
+
+function setupMats() {
+    const mats = [...new Set(allQuestions.map(q => q.materia).filter(m => m))].sort();
+    const cont = document.getElementById('multiMat');
+    cont.innerHTML = "";
+    mats.forEach(m => {
+        cont.innerHTML += `<label class="m-item"><input type="checkbox" name="mat" value="${m}" checked> ${m}</label>`;
+    });
+}
+
+function startExam() {
+    const num = parseInt(document.getElementById('inNum').value) || 10;
+    showInstantFeedback = document.getElementById('inFeedback').value === "con";
+    const sel = Array.from(document.querySelectorAll('input[name="mat"]:checked')).map(c => c.value);
+    let pool = allQuestions.filter(q => sel.includes(q.materia));
+    exam = pool.sort(() => 0.5 - Math.random()).slice(0, num);
+    idx = 0; userAnswers = new Array(exam.length).fill(null);
+    showQ(); showScreen('secQ');
+}
+
+function showQ() {
+    const q = exam[idx]; const ans = userAnswers[idx];
+    const wrap = document.getElementById('optsWrap');
+    document.getElementById('qTxt').innerText = q.pregunta;
+    wrap.innerHTML = ""; document.getElementById('fbWrap').innerHTML = "";
+    const letras = ['A','B','C','D'];
+    const correcta = (q.respuesta||"").toString().trim().toUpperCase();
+    const opciones = (q.opciones||"").split('\n').filter(o => o.trim());
+
+    opciones.forEach((txt, i) => {
+        const L = letras[i];
+        const d = document.createElement('div');
+        d.className = 'opt';
+        if(ans && showInstantFeedback) {
+            if(L === correcta) d.className = 'opt ok';
+            else if(L === ans) d.className = 'opt ko';
+        }
+        d.innerHTML = `<div class="oltr">${L}</div><div style="flex:1">${txt}</div>`;
+        d.onclick = () => { if(!ans || !showInstantFeedback) { userAnswers[idx] = L; showQ(); } };
+        wrap.appendChild(d);
+    });
+
+    if(ans && showInstantFeedback) {
+        const ok = ans === correcta;
+        document.getElementById('fbWrap').innerHTML = `<div class="fb ${ok?'ok':'ko'}"><b>${ok?'¡Correcto!':'Incorrecto'}</b><br>${q.saber||'Respuesta: '+correcta}</div>`;
+    }
+}
+
+function nextQ() { if(idx < exam.length-1){ idx++; showQ(); } else { finish(); } }
+function prevQ() { if(idx > 0){ idx--; showQ(); } }
+
+function finish() {
+    let oks = 0;
+    exam.forEach((q, i) => { if(userAnswers[i] === (q.respuesta||"").toString().trim().toUpperCase()) oks++; });
+    document.getElementById('rPct').innerText = Math.round(oks/exam.length*100) + "%";
+    showScreen('secRes');
+}
+
+function showScreen(id) {
+    document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+}
+</script>
+</body>
+</html>
