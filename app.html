@@ -41,7 +41,7 @@
 
     <div id="secLogin" class="card">
         <h2 style="text-align:center;margin-bottom:1.5rem">Acceso Alumno</h2>
-        <div class="field"><label>Email</label><input type="email" id="inEmail" placeholder="tu@email.com"></div>
+        <div class="field"><label>Email Autorizado</label><input type="email" id="inEmail" placeholder="tu@email.com"></div>
         <button id="btnLogin" class="btn" onclick="doLogin()">Entrar</button>
     </div>
 
@@ -83,44 +83,39 @@ function callGAS(type) {
         const s = document.createElement('script');
         window[cb] = (data) => { delete window[cb]; s.remove(); resolve(data); };
         s.src = `${API}?type=${type}&callback=${cb}&t=${Date.now()}`;
-        s.onerror = () => reject(new Error("Error de conexión"));
+        s.onerror = () => reject(new Error("Error de conexión con la API"));
         document.head.appendChild(s);
-        setTimeout(() => { if(window[cb]) reject(new Error("Tiempo agotado")); }, 25000);
+        setTimeout(() => { if(window[cb]) reject(new Error("Tiempo agotado (25s)")); }, 25000);
     });
 }
 
 async function doLogin() {
-    const email = document.getElementById('inEmail').value.trim().toLowerCase();
+    const inputEmail = document.getElementById('inEmail').value.trim().toLowerCase();
     const btn = document.getElementById('btnLogin');
     const banner = document.getElementById('errBanner');
-    if(!email) return;
     
-    btn.disabled = true; btn.innerText = "Verificando..."; banner.style.display = 'none';
+    if(!inputEmail) return alert("Escribe tu email");
+    
+    btn.disabled = true; 
+    btn.innerText = "Verificando..."; 
+    banner.style.display = 'none';
 
     try {
         const resU = await callGAS('users');
-        if(!resU || !resU.rows) throw new Error("No se recibieron datos de usuarios");
+        if(!resU || !resU.rows) throw new Error("No se pudo leer la lista de alumnos");
 
-        // Normalizamos encabezados para que coincidan siempre
-        const headers = resU.headers.map(h => h.toString().toLowerCase()
-            .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, ''));
-
-        const users = resU.rows.map(r => {
-            let o = {}; headers.forEach((h, i) => o[h] = r[i]);
-            return o;
-        });
-
-        // Buscamos el email en la columna 'correo' o 'email'
-        const user = users.find(u => 
-            (u.correo && u.correo.toLowerCase() === email) || 
-            (u.email && u.email.toLowerCase() === email)
+        // BUSQUEDA FLEXIBLE: Miramos en toda la fila por si acaso
+        const userRow = resU.rows.find(row => 
+            row.some(cell => cell.toString().toLowerCase().trim() === inputEmail)
         );
 
-        if(!user) throw new Error("Email no autorizado: " + email);
+        if(!userRow) throw new Error("Email no autorizado: " + inputEmail);
 
+        // Si lo encuentra, cargamos preguntas
         const resQ = await callGAS('questions');
         if(!resQ || !resQ.rows) throw new Error("No se pudieron cargar las preguntas");
 
+        // Normalizar encabezados de preguntas
         const qHeaders = resQ.headers.map(h => h.toString().toLowerCase()
             .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, ''));
 
@@ -129,12 +124,14 @@ async function doLogin() {
             return o;
         });
 
-        document.getElementById('cfgUser').innerText = (user.usuario || "ALUMNO").toUpperCase();
+        document.getElementById('cfgUser').innerText = userRow[0].toString().toUpperCase();
         setupMats();
         showScreen('secConfig');
     } catch(e) {
-        banner.innerText = e.message; banner.style.display = 'block';
-        btn.disabled = false; btn.innerText = "Entrar";
+        banner.innerText = e.message; 
+        banner.style.display = 'block';
+        btn.disabled = false; 
+        btn.innerText = "Entrar";
     }
 }
 
@@ -142,6 +139,10 @@ function setupMats() {
     const mats = [...new Set(allQuestions.map(q => q.materia).filter(m => m))].sort();
     const cont = document.getElementById('multiMat');
     cont.innerHTML = "";
+    if(mats.length === 0) {
+        cont.innerHTML = "No se encontraron materias en el Excel.";
+        return;
+    }
     mats.forEach(m => {
         cont.innerHTML += `<label class="m-item"><input type="checkbox" name="mat" value="${m}" checked> ${m}</label>`;
     });
@@ -161,11 +162,13 @@ function startExam() {
 function showQ() {
     const q = exam[idx]; const ans = userAnswers[idx];
     const wrap = document.getElementById('optsWrap');
-    document.getElementById('qTxt').innerText = q.pregunta;
+    document.getElementById('qTxt').innerText = q.pregunta || "Sin texto de pregunta";
     wrap.innerHTML = ""; document.getElementById('fbWrap').innerHTML = "";
+    
     const letras = ['A','B','C','D'];
     const correcta = (q.respuesta||"").toString().trim().toUpperCase();
-    const opciones = (q.opciones||"").split('\n').filter(o => o.trim());
+    const opcionesRaw = q.opciones || "";
+    const opciones = opcionesRaw.split('\n').filter(o => o.trim());
 
     opciones.forEach((txt, i) => {
         const L = letras[i];
@@ -184,7 +187,8 @@ function showQ() {
 
     if(ans && showInstantFeedback) {
         const ok = ans === correcta;
-        document.getElementById('fbWrap').innerHTML = `<div class="fb ${ok?'ok':'ko'}"><b>${ok?'¡Correcto!':'Incorrecto'}</b><br>${q.saber || q.explicacion || 'Respuesta: '+correcta}</div>`;
+        const explicacion = q.saber || q.explicacion || 'La respuesta correcta es: ' + correcta;
+        document.getElementById('fbWrap').innerHTML = `<div class="fb ${ok?'ok':'ko'}"><b>${ok?'¡Correcto!':'Incorrecto'}</b><br>${explicacion}</div>`;
     }
 }
 
