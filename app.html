@@ -3,56 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENFOCADOS - SISTEMA DE TEST (PRUEBAS)</title>
+    <title>ENFOCADOS PRUEBAS</title>
     <style>
-        :root { --y: #facc15; --d: #2c3e50; --bg: #fff9c4; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; color: var(--d); }
-        .card { background: white; padding: 30px; border-radius: 20px; border: 3px solid var(--y); width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
-        h1 { margin-bottom: 10px; font-weight: 800; }
-        .tag { background: var(--d); color: white; padding: 4px 10px; border-radius: 5px; font-size: 0.7rem; font-weight: bold; margin-bottom: 15px; display: inline-block; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: var(--y); color: var(--d); border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 10px; }
-        button:disabled { background: #cbd5e1; cursor: not-allowed; }
-        .hidden { display: none !important; }
-        #status { margin-top: 15px; font-size: 0.85rem; color: #64748b; }
-        .error { color: #ef4444; font-weight: bold; background: #fee2e2; padding: 10px; border-radius: 8px; margin-top: 10px; }
-        .materia-item { text-align: left; padding: 8px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 10px; }
+        body { font-family: sans-serif; background: #fff9c4; text-align: center; padding: 50px; }
+        .box { background: white; padding: 30px; border-radius: 20px; border: 3px solid #facc15; max-width: 400px; margin: auto; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #facc15; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .error { color: red; margin-top: 10px; font-size: 0.8rem; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div class="tag">ENTORNO DE PRUEBAS / STAGING</div>
+<div class="box">
     <h1>ENFOCADOS</h1>
+    <p>Entorno de Pruebas</p>
 
-    <div id="secLogin">
-        <p>Acceso con correo de prueba</p>
-        <input type="email" id="inEmail" placeholder="tu@correo.com">
-        <button id="btnLogin" onclick="doLogin()">ENTRAR AL SISTEMA</button>
-        <div id="status"></div>
+    <div id="loginArea">
+        <input type="email" id="uEmail" placeholder="Introduce tu email">
+        <button id="btn" onclick="iniciarLogin()">ENTRAR AL SISTEMA</button>
+        <p id="msg"></p>
     </div>
 
-    <div id="secConfig" class="hidden">
-        <h2 id="welcomeMsg">¡Hola!</h2>
-        <p style="font-size: 0.9rem; margin-bottom: 15px;">Configura tu examen de prueba:</p>
+    <div id="configArea" class="hidden">
+        <h2 style="color:green">¡Acceso Correcto!</h2>
+        <p>Cargando materias...</p>
+        <div id="listaMaterias" style="text-align:left; background:#f0f0f0; padding:10px; border-radius:5px"></div>
+    </div>
+</div>
+
+<script>
+// URL limpia del script
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbwzQPNahJxw8YTLln-O9WaAkXoH3Vd0h7sFgugRxHX8bIEfasezvzl6ZvEENiTJMWKF/exec';
+
+function iniciarLogin() {
+    const email = document.getElementById('uEmail').value.trim().toLowerCase();
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('btn');
+
+    if(!email) { alert("Escribe un email"); return; }
+
+    btn.disabled = true;
+    btn.innerText = "VERIFICANDO...";
+    msg.innerText = "Conectando con Google Sheets...";
+
+    // Llamada JSONP
+    const script = document.createElement('script');
+    const callbackName = 'callback_' + Math.round(Math.random() * 10000);
+    
+    window[callbackName] = function(data) {
+        delete window[callbackName];
+        document.body.removeChild(script);
+        procesarRespuesta(data, email);
+    };
+
+    script.src = URL_SCRIPT + '?type=users&callback=' + callbackName + '&t=' + Date.now();
+    script.onerror = () => {
+        msg.innerHTML = '<b class="error">Error de red: El Script de Google no responde.</b>';
+        btn.disabled = false;
+        btn.innerText = "REINTENTAR";
+    };
+    document.body.appendChild(script);
+}
+
+function procesarRespuesta(res, email) {
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('btn');
+    
+    // Buscar email en la columna 'correo' (asumiendo que es la segunda columna o tiene ese encabezado)
+    const headers = res.headers.map(h => h.toLowerCase().trim());
+    const emailIdx = headers.indexOf('correo');
+    
+    const usuario = res.rows.find(r => r[emailIdx] && r[emailIdx].toLowerCase().trim() === email);
+
+    if(usuario) {
+        msg.innerText = "Usuario validado. Trayendo preguntas...";
+        cargarPreguntas();
+    } else {
+        msg.innerHTML = '<b class="error">Email no encontrado en la base de datos de pruebas.</b>';
+        btn.disabled = false;
+        btn.innerText = "ENTRAR";
+    }
+}
+
+function cargarPreguntas() {
+    const scriptQ = document.createElement('script');
+    const cbQ = 'cbQ_' + Math.round(Math.random() * 10000);
+    
+    window[cbQ] = function(data) {
+        const materias = [...new Set(data.rows.map(r => r[3]))]; // Asumiendo que materia es col 4
+        document.getElementById('loginArea').classList.add('hidden');
+        document.getElementById('configArea').classList.remove('hidden');
         
-        <div style="text-align: left; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px;">Materias disponibles:</div>
-        <div id="matsList" style="max-height: 150px; overflow-y: auto; background: #f8fafc; border-radius: 10px; padding: 10px; border: 1px solid #e2e8f0;">
-            </div>
+        const lista = document.getElementById('listaMaterias');
+        materias.forEach(m => { if(m) lista.innerHTML += '<div>• ' + m + '</div>'; });
+    };
 
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <div style="flex:1">
-                <label style="font-size: 0.7rem; font-weight: bold; display: block; text-align: left;">PREGUNTAS</label>
-                <input type="number" id="numQ" value="10" min="5" max="100">
-            </div>
-            <div style="flex:1">
-                <label style="font-size: 0.7rem; font-weight: bold; display: block; text-align: left;">FEEDBACK</label>
-                <select id="modeFB">
-                    <option value="con">Inmediato</option>
-                    <option value="sin">Al final</option>
-                </select>
-            </div>
-        </div>
+    scriptQ.src = URL_SCRIPT + '?type=questions&callback=' + cbQ;
+    document.body.appendChild(scriptQ);
+}
+</script>
 
-        <button id="btnStart" onclick="startTest()">INICIAR EXAMEN DE PRUEBA</button>
-        <button onclick="location.reload()" style="background: none; color: #64748b; font-
+</body>
+</html>
