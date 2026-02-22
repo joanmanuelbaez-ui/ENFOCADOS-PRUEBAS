@@ -1,89 +1,327 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENFOCADOS - ACCESO</title>
-    <style>
-        body { font-family: sans-serif; background: #fff9c4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; border: 2px solid #facc15; text-align: center; }
-        h1 { color: #2c3e50; margin-bottom: 1.5rem; }
-        input { width: 100%; padding: 10px; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #facc15; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: #2c3e50; }
-        .error { color: red; margin-top: 10px; display: none; }
-        .hidden { display: none !important; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENFOCADOS – Entorno de Pruebas</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* --- ESTILOS DEL ARCHIVO ORIGINAL --- */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--Y:rgb(250,250,0);--Yd:rgb(215,215,0);--D:#2c3e50;--D2:#1a252f;--V:#10b981;--R:#ef4444;--G:#64748b;--B:#e2e8f0;--W:#f59e0b}
+body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,#fffef0 0%,#fff9c4 100%);min-height:100vh;color:#1e293b;line-height:1.6}
+.wrap{max-width:860px;margin:0 auto;padding:1.8rem 1.2rem}
+header{text-align:center;margin-bottom:1.6rem}
+h1{font-family:'Montserrat',sans-serif;font-size:2.8rem;font-weight:800;color:var(--D);letter-spacing:-1px}
+.card{background:#fff;border-radius:18px;padding:2.2rem;box-shadow:0 10px 25px rgba(0,0,0,.05);border:2px solid var(--Y);margin-bottom:1.5rem}
+.field{margin-bottom:1.2rem}
+.field label{display:block;margin-bottom:.4rem;font-weight:600;font-size:.9rem;color:var(--G)}
+.field input, .field select{width:100%;padding:.85rem;border:2px solid var(--B);border-radius:12px;font-size:1rem;font-family:inherit;transition:.2s}
+.field input:focus{border-color:var(--Y);outline:none}
+.btn{width:100%;padding:1rem;background:var(--Y);color:var(--D);border:none;border-radius:12px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn:hover{background:var(--Yd);transform:translateY(-1px)}
+.btn:disabled{background:#cbd5e1;cursor:not-allowed;transform:none}
+.error-banner{background:#fee2e2;color:#b91c1c;padding:1rem;border-radius:12px;margin-bottom:1.5rem;border:1px solid #f87171;display:none;font-weight:500;text-align:center}
+.hidden{display:none !important}
+.ubar{background:var(--D);color:#fff;padding:1rem 1.4rem;border-radius:14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;font-weight:600}
+.multi-box{border:2px solid var(--B);border-radius:12px;padding:10px;max-height:200px;overflow-y:auto;background:#f8fafc}
+.m-item{display:flex;align-items:center;padding:10px;gap:12px;border-bottom:1px solid #edf2f7;cursor:pointer}
+.m-item:last-child{border-bottom:none}
+.qhdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1rem}
+.pbar-bg{background:var(--B);height:8px;margin-bottom:1.5rem;border-radius:4px;overflow:hidden}
+.pbar{background:var(--Y);height:100%;width:0%;transition:width .4s cubic-bezier(0.1, 0.7, 1.0, 0.1)}
+.opt{display:flex;align-items:center;gap:1rem;padding:1.1rem;border:2px solid var(--B);border-radius:14px;cursor:pointer;margin-bottom:12px;transition:.2s;background:#fff}
+.opt:hover{border-color:var(--Y);background:#fffdf0}
+.opt.selected{border-color:var(--D);background:#f1f5f9}
+.opt.ok{border-color:var(--V);background:#ecfdf5}
+.opt.ko{border-color:var(--R);background:#fef2f2}
+.oltr{width:32px;height:32px;border-radius:50%;background:var(--B);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0}
+.opt.ok .oltr{background:var(--V);color:#fff}
+.opt.ko .oltr{background:var(--R);color:#fff}
+.fb{margin-top:1.5rem;padding:1.4rem;border-radius:14px;border-left:5px solid;line-height:1.5}
+.fb.ok{background:#f0fdf4;border-color:var(--V);color:#065f46}
+.fb.ko{background:#fef2f2;border-color:var(--R);color:#991b1b}
+</style>
 </head>
 <body>
 
-    <div id="secLogin" class="card">
+<div class="wrap">
+    <header>
         <h1>ENFOCADOS</h1>
-        <p style="margin-bottom: 1rem; color: #666;">Introduce tu email para entrar</p>
-        <input type="email" id="inEmail" placeholder="tu@email.com">
-        <button id="btnLogin" onclick="doLogin()">Entrar al Sistema</button>
-        <div id="errLog" class="error"></div>
+        <p style="color:var(--G);font-weight:600;margin-top:5px">ENTORNO DE PRUEBAS</p>
+    </header>
+
+    <div id="errBanner" class="error-banner"></div>
+
+    <div id="secLogin" class="card">
+        <h2 style="text-align:center;margin-bottom:1.8rem;color:var(--D)">Acceso Alumno</h2>
+        <div class="field">
+            <label>Email Autorizado</label>
+            <input type="email" id="inEmail" placeholder="ejemplo@correo.com" spellcheck="false">
+        </div>
+        <button id="btnLogin" class="btn" onclick="doLogin()">Entrar al Sistema</button>
     </div>
 
     <div id="secConfig" class="card hidden">
-        <h1>¡Bienvenido!</h1>
-        <p>Conexión establecida con éxito.</p>
-        <button onclick="location.reload()">Cerrar sesión</button>
+        <div class="ubar">
+            <span id="cfgUser">ALUMNO</span>
+            <span onclick="location.reload()" style="cursor:pointer;font-size:.8rem;opacity:.8">CERRAR SESIÓN</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px">
+            <div class="field">
+                <label>Nº de Preguntas</label>
+                <input type="number" id="inNum" value="10" min="1" max="100">
+            </div>
+            <div class="field">
+                <label>Modo Explicación</label>
+                <select id="inFeedback">
+                    <option value="con">Activado</option>
+                    <option value="sin">Desactivado</option>
+                </select>
+            </div>
+        </div>
+        <div class="field">
+            <label>Selecciona Materias</label>
+            <div id="multiMat" class="multi-box"></div>
+        </div>
+        <button id="btnStart" class="btn" onclick="startExam()">Generar Evaluación</button>
     </div>
 
-    <script>
-        const API = 'https://script.google.com/macros/s/AKfycbwMfcGPg0LUHYV-n28R90oBZX6EIY7iEdWuTgLADe7YkuB9dVzokVOF4LoHusR5_mdY/exec';
+    <div id="secQ" class="card hidden">
+        <div class="qhdr">
+            <span id="qNum" style="font-weight:800;color:var(--D)">Pregunta 1</span>
+            <span id="qProg" style="font-size:.9rem;color:var(--G);font-weight:600">1/10</span>
+        </div>
+        <div class="pbar-bg"><div id="pBar" class="pbar"></div></div>
+        <div id="qTxt" style="font-size:1.15rem;font-weight:600;margin-bottom:1.8rem;color:var(--D2)"></div>
+        <div id="optsWrap"></div>
+        <div id="fbWrap"></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:2rem">
+            <button class="btn" style="background:var(--B)" onclick="prevQ()">Anterior</button>
+            <button id="btnNext" class="btn" onclick="nextQ()">Siguiente</button>
+        </div>
+        <button id="btnFinishNow" class="btn btn-outline" style="margin-top:15px;background:none;border:2px solid var(--B);color:var(--G)" onclick="finishExam()">Finalizar ahora</button>
+    </div>
 
-        async function doLogin() {
-            const email = document.getElementById('inEmail').value.trim().toLowerCase();
-            const btn = document.getElementById('btnLogin');
-            const err = document.getElementById('errLog');
+    <div id="secRes" class="card hidden" style="text-align:center">
+        <h2 style="color:var(--D)">Evaluación Finalizada</h2>
+        <div id="rPct" style="font-size:4.5rem;font-weight:900;margin:1rem 0;color:var(--D)">0%</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:2rem">
+            <div style="padding:10px;background:#f0fdf4;border-radius:10px"><b style="color:var(--V);display:block">Aciertos</b><span id="rOk">0</span></div>
+            <div style="padding:10px;background:#fef2f2;border-radius:10px"><b style="color:var(--R);display:block">Fallos</b><span id="rKo">0</span></div>
+            <div style="padding:10px;background:#f8fafc;border-radius:10px"><b style="color:var(--G);display:block">Blancos</b><span id="rWa">0</span></div>
+        </div>
+        <div id="resButtons"></div>
+    </div>
+</div>
 
-            if (!email) { alert("Escribe tu email"); return; }
+<script>
+// CONFIGURACIÓN - USANDO TU URL DE PRUEBAS
+const API = 'https://script.google.com/macros/s/AKfycbwMfcGPg0LUHYV-n28R90oBZX6EIY7iEdWuTgLADe7YkuB9dVzokVOF4LoHusR5_mdY/exec';
 
-            btn.disabled = true;
-            btn.innerText = "Cargando...";
-            err.style.display = 'none';
+let allQuestions = [], exam = [], idx = 0, userAnswers = [], showInstantFeedback = true, isReviewing = false;
+let questionsWithMistakes = [];
 
-            try {
-                // Usamos una técnica de carga ultra-simple
-                const callbackName = 'jsonp_' + Date.now();
-                const script = document.createElement('script');
-                
-                window[callbackName] = function(data) {
-                    delete window[callbackName];
-                    document.head.removeChild(script);
-                    validarUsuario(data, email);
-                };
+// Función JSONP para evitar bloqueos de seguridad (CORS)
+function callGAS(type) {
+    return new Promise((resolve, reject) => {
+        const callbackName = 'callback_' + Math.round(100000 * Math.random());
+        const script = document.createElement('script');
+        
+        window[callbackName] = function(data) {
+            delete window[callbackName];
+            document.head.removeChild(script);
+            resolve(data);
+        };
 
-                script.src = `${API}?type=users&callback=${callbackName}`;
-                document.head.appendChild(script);
+        script.onerror = () => reject(new Error("Error de conexión con el servidor Google."));
+        script.src = `${API}?type=${type}&callback=${callbackName}&t=${Date.now()}`;
+        document.head.appendChild(script);
 
-            } catch (e) {
-                btn.disabled = false;
-                btn.innerText = "Entrar al Sistema";
-                err.innerText = "Error de conexión";
-                err.style.display = 'block';
-            }
+        setTimeout(() => { if(window[callbackName]) reject(new Error("Tiempo de espera agotado (20s).")); }, 20000);
+    });
+}
+
+async function doLogin() {
+    const email = document.getElementById('inEmail').value.trim().toLowerCase();
+    const btn = document.getElementById('btnLogin');
+    const banner = document.getElementById('errBanner');
+
+    if (!email) { alert("Por favor, introduce tu email."); return; }
+    
+    banner.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = "Verificando acceso...";
+
+    try {
+        // 1. Obtener usuarios
+        const userData = await callGAS('users');
+        const users = parseGAS(userData);
+        
+        const user = users.find(u => (u.correo || u.email || '').toLowerCase().trim() === email);
+
+        if (!user) throw new Error("Email no autorizado. Contacta con el administrador.");
+
+        // 2. Obtener preguntas
+        btn.textContent = "Cargando preguntas...";
+        const qData = await callGAS('questions');
+        allQuestions = parseGAS(qData);
+
+        if (allQuestions.length === 0) throw new Error("No se encontraron preguntas en la base de datos.");
+
+        // 3. Todo OK
+        document.getElementById('cfgUser').textContent = (user.usuario || user.nombre || "ALUMNO").toUpperCase();
+        setupMaterials();
+        showScreen('secConfig');
+    } catch (err) {
+        banner.textContent = err.message;
+        banner.style.display = 'block';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Entrar al Sistema";
+    }
+}
+
+function parseGAS(res) {
+    if (!res || !res.rows) return [];
+    const headers = res.headers.map(h => h.toString().toLowerCase().trim());
+    return res.rows.map(row => {
+        let obj = {};
+        headers.forEach((h, i) => { if(h) obj[h] = row[i]; });
+        return obj;
+    });
+}
+
+function setupMaterials() {
+    const mats = [...new Set(allQuestions.map(q => q.materia).filter(m => m))].sort();
+    const container = document.getElementById('multiMat');
+    container.innerHTML = "";
+    mats.forEach(m => {
+        container.innerHTML += `<label class="m-item"><input type="checkbox" name="materia" value="${m}" checked> ${m}</label>`;
+    });
+}
+
+function startExam() {
+    const num = parseInt(document.getElementById('inNum').value) || 10;
+    showInstantFeedback = document.getElementById('inFeedback').value === "con";
+    const selectedMats = Array.from(document.querySelectorAll('input[name="materia"]:checked')).map(cb => cb.value);
+    
+    let pool = allQuestions.filter(q => selectedMats.includes(q.materia));
+    if (pool.length === 0) { alert("Selecciona al menos una materia."); return; }
+    
+    exam = pool.sort(() => 0.5 - Math.random()).slice(0, num);
+    idx = 0;
+    userAnswers = new Array(exam.length).fill(null);
+    isReviewing = false;
+    
+    document.getElementById('btnFinishNow').classList.remove('hidden');
+    showQ();
+    showScreen('secQ');
+}
+
+function showQ() {
+    const q = exam[idx];
+    const ans = userAnswers[idx];
+    
+    document.getElementById('qNum').textContent = "Pregunta " + (idx + 1);
+    document.getElementById('qProg').textContent = (idx + 1) + "/" + exam.length;
+    document.getElementById('pBar').style.width = ((idx + 1) / exam.length * 100) + "%";
+    document.getElementById('qTxt').textContent = q.pregunta;
+    
+    const wrap = document.getElementById('optsWrap');
+    wrap.innerHTML = "";
+    document.getElementById('fbWrap').innerHTML = "";
+
+    const letters = ['A', 'B', 'C', 'D'];
+    const correcta = (q.respuesta || "").toString().trim().toUpperCase();
+    
+    // Soporta opciones separadas por saltos de línea
+    const opcionesTxt = (q.opciones || "").split('\n').filter(o => o.trim());
+
+    opcionesTxt.forEach((txt, i) => {
+        const letter = letters[i];
+        const div = document.createElement('div');
+        div.className = 'opt';
+        
+        if (ans === letter) div.classList.add('selected');
+
+        // Lógica de revisión o feedback instantáneo
+        if (ans && (showInstantFeedback || isReviewing)) {
+            if (letter === correcta) div.className = 'opt ok';
+            else if (letter === ans) div.className = 'opt ko';
         }
 
-        function validarUsuario(data, email) {
-            const btn = document.getElementById('btnLogin');
-            const err = document.getElementById('errLog');
-            
-            // Buscar el email en las filas (la columna del email suele ser la segunda [1])
-            const filas = data.rows || [];
-            const encontrado = filas.some(fila => fila.join(',').toLowerCase().includes(email));
-
-            if (encontrado) {
-                document.getElementById('secLogin').classList.add('hidden');
-                document.getElementById('secConfig').classList.remove('hidden');
-            } else {
-                btn.disabled = false;
-                btn.innerText = "Entrar al Sistema";
-                err.innerText = "Email no encontrado en la base de datos";
-                err.style.display = 'block';
-            }
+        div.innerHTML = `<div class="oltr">${letter}</div><div style="flex:1">${txt}</div>`;
+        
+        if (!ans || (!showInstantFeedback && !isReviewing)) {
+            div.onclick = () => { userAnswers[idx] = letter; showQ(); };
         }
-    </script>
+        wrap.appendChild(div);
+    });
+
+    if (ans && (showInstantFeedback || isReviewing)) {
+        const ok = ans === correcta;
+        document.getElementById('fbWrap').innerHTML = `
+            <div class="fb ${ok ? 'ok' : 'ko'}">
+                <b style="display:block;margin-bottom:5px">${ok ? '✓ CORRECTO' : '✗ INCORRECTO'}</b>
+                ${q.saber || "Respuesta correcta: " + correcta}
+            </div>`;
+    }
+}
+
+function nextQ() {
+    if (idx < exam.length - 1) { idx++; showQ(); }
+    else { finishExam(); }
+}
+
+function prevQ() {
+    if (idx > 0) { idx--; showQ(); }
+}
+
+function finishExam() {
+    if (!isReviewing && !confirm("¿Quieres finalizar la evaluación y ver los resultados?")) return;
+    
+    let oks = 0, kos = 0, was = 0;
+    questionsWithMistakes = [];
+
+    exam.forEach((q, i) => {
+        const ans = userAnswers[i];
+        const cor = (q.respuesta || "").toString().trim().toUpperCase();
+        if (!ans) { was++; questionsWithMistakes.push({q, a: null}); }
+        else if (ans === cor) { oks++; }
+        else { kos++; questionsWithMistakes.push({q, a: ans}); }
+    });
+
+    document.getElementById('rOk').textContent = oks;
+    document.getElementById('rKo').textContent = kos;
+    document.getElementById('rWa').textContent = was;
+    document.getElementById('rPct').textContent = Math.round(oks / exam.length * 100) + "%";
+    
+    const btnArea = document.getElementById('resButtons');
+    btnArea.innerHTML = `<button class="btn" onclick="location.reload()">Nueva Evaluación</button>`;
+    
+    if (questionsWithMistakes.length > 0) {
+        btnArea.innerHTML += `<button class="btn" style="background:none;border:2px solid var(--B);margin-top:10px" onclick="reviewErrors()">Revisar Errores (${questionsWithMistakes.length})</button>`;
+    }
+
+    showScreen('secRes');
+}
+
+function reviewErrors() {
+    exam = questionsWithMistakes.map(m => m.q);
+    userAnswers = questionsWithMistakes.map(m => m.a);
+    isReviewing = true;
+    idx = 0;
+    document.getElementById('btnFinishNow').classList.add('hidden');
+    showQ();
+    showScreen('secQ');
+}
+
+function showScreen(id) {
+    document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+    window.scrollTo(0,0);
+}
+</script>
 </body>
 </html>
