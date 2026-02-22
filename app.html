@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENFOCADOS - Plataforma de Oposiciones</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* --- ESTILOS --- */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--Y:rgb(250,250,0);--Yd:rgb(215,215,0);--D:#2c3e50;--D2:#1a252f;--V:#10b981;--R:#ef4444;--G:#64748b;--B:#e2e8f0;--W:#f59e0b}
+body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,#fffef0 0%,#fff9c4 100%);min-height:100vh;color:#1e293b;line-height:1.6}
+.wrap{max-width:860px;margin:0 auto;padding:1.8rem 1.2rem}
+header{text-align:center;margin-bottom:1.6rem}
+header svg{display:block;margin:0 auto .4rem}
+h1{font-family:'Montserrat',sans-serif;font-size:2.8rem;font-weight:800;color:var(--D);letter-spacing:-1px}
+.sub{color:var(--G);font-size:1rem;font-weight:500;text-transform:uppercase;letter-spacing:1px}
+.card{background:#fff;border-radius:18px;padding:2rem;box-shadow:0 4px 24px rgba(0,0,0,.08);border:2px solid var(--Y);margin-bottom:1.4rem}
+.field{margin-bottom:1.1rem;text-align:left}
+.field label{display:block;margin-bottom:.3rem;color:var(--D);font-weight:600;font-size:.9rem}
+.field input, .field select{width:100%;padding:.82rem 1rem;border:2px solid var(--B);border-radius:10px;font-size:1rem;font-family:inherit}
+.btn{padding:.88rem 1.5rem;background:var(--Y);color:var(--D);border:none;border-radius:10px;font-size:1.05rem;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all .2s;box-shadow:0 3px 8px rgba(250,250,0,0.3)}
+.btn:hover:not(:disabled){background:var(--Yd);transform:translateY(-1px)}
+.btn:disabled{background:#cbd5e1;color:#94a3b8;cursor:not-allowed;box-shadow:none}
+.btn-alt{background:#fff;border:2px solid var(--Y);color:var(--D)}
+.btn-outline{border: 2px solid var(--D); color: var(--D); margin-top: 15px}
+
+/* AJUSTE SOLICITADO: Botón Terminar ahora es AMARILLO con letras oscuras */
+.btn-danger{background:var(--Y); color:var(--D); border: 2px solid var(--D); box-shadow: 0 3px 8px rgba(0,0,0,0.1); margin-top: 10px}
+.btn-danger:hover{background:var(--Yd)}
+
+.ubar{background:linear-gradient(135deg,var(--Y),rgb(255,255,100));padding:.78rem 1.1rem;border-radius:10px;display:flex;justify-content:space-between;align-items:center;margin-bottom:1.4rem;font-weight:600}
+.multi-box{border:2px solid var(--B);border-radius:10px;padding:10px;max-height:200px;overflow-y:auto;background:#f8fafc}
+.m-item{display:flex;align-items:center;padding:8px;gap:10px;cursor:pointer;border-bottom:1px solid #edf2f7;font-size:0.95rem}
+.m-item input{width:18px;height:18px;cursor:pointer}
+.qhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;border-bottom:2px solid var(--Y);padding-bottom:5px}
+.pbar-bg{background:var(--B);border-radius:4px;height:6px;margin-bottom:1.2rem;overflow:hidden}
+.pbar{background:var(--Y);height:100%;transition:width .4s ease}
+.opt{display:flex;align-items:center;gap:.85rem;padding:1rem;border:2px solid var(--B);border-radius:11px;cursor:pointer;background:#fff;margin-bottom:10px}
+.opt.selected-no-fb{border-color:var(--D);background:var(--B)}
+.opt.dis{cursor:default}
+.opt.ok{border-color:var(--V);background:#f0fdf4}
+.opt.ko{border-color:var(--R);background:#fef2f2}
+.oltr{width:30px;height:30px;border-radius:50%;background:var(--B);display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:0.9rem;color:var(--D)}
+.opt.ok .oltr{background:var(--V);color:#fff}
+.opt.ko .oltr{background:var(--R);color:#fff}
+.fb{margin-top:1.3rem;padding:1.2rem;border-radius:10px}
+.fb.ok{background:#f0fdf4;border-left:4px solid var(--V)}
+.fb.ko{background:#fef2f2;border-left:4px solid var(--R)}
+.fb.wa{background:#fffbeb;border-left:4px solid var(--W)}
+.fb-t{font-weight:700;margin-bottom:8px}
+.fb-body{font-size:0.95rem;color:var(--D2);white-space:pre-wrap}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+    <header>
+        <svg width="60" height="60" viewBox="0 0 68 68" fill="none"><circle cx="34" cy="34" r="32" fill="rgb(250,250,0)" stroke="#2c3e50" stroke-width="3"/><path d="M22 34L30 42L46 26" stroke="#2c3e50" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h1>ENFOCADOS</h1>
+        <div class="sub">Plataforma de Preparación Profesional (STAGING)</div>
+    </header>
+
+    <div id="secLogin" class="card">
+      <h2 style="text-align:center;margin-bottom:1.5rem">Acceso</h2>
+        <div class="field"><label>
