@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ENFOCADOS - Plataforma de Oposiciones</title>
+<title>ENFOCADOS - Entorno de Pruebas</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* --- ESTILOS --- */
@@ -56,11 +56,11 @@ h1{font-family:'Montserrat',sans-serif;font-size:2.8rem;font-weight:800;color:va
     <header>
         <svg width="60" height="60" viewBox="0 0 68 68" fill="none"><circle cx="34" cy="34" r="32" fill="rgb(250,250,0)" stroke="#2c3e50" stroke-width="3"/><path d="M22 34L30 42L46 26" stroke="#2c3e50" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <h1>ENFOCADOS</h1>
-        <div class="sub">Plataforma de Preparación Profesional (STAGING)</div>
+        <div class="sub">Entorno de Pruebas (ALUMNOS ACTIVOS)</div>
     </header>
 
     <div id="secLogin" class="card">
-      <h2 style="text-align:center;margin-bottom:1.5rem">Acceso</h2>
+        <h2 style="text-align:center;margin-bottom:1.5rem">Acceso de Prueba</h2>
         <div class="field">
             <label>Email</label>
             <input type="email" id="inEmail" placeholder="tu@email.com">
@@ -83,7 +83,7 @@ h1{font-family:'Montserrat',sans-serif;font-size:2.8rem;font-weight:800;color:va
                 </select>
             </div>
         </div>
-      <div class="field">
+        <div class="field">
             <div style="display:flex; justify-content:space-between; margin-bottom:8px">
                 <label style="font-weight:600; font-size:0.9rem">Materias</label>
                 <button class="btn-sm" style="border:none; cursor:pointer" onclick="toggleAll()">Todas/Ninguna</button>
@@ -95,4 +95,63 @@ h1{font-family:'Montserrat',sans-serif;font-size:2.8rem;font-weight:800;color:va
 
     <div id="secQ" class="card hidden">
         <div class="qhdr"><span id="qNum" style="font-weight:800"></span><span id="qProg"></span></div>
-        <div class="pbar-bg">
+        <div class="pbar-bg"><div id="pBar" class="pbar"></div></div>
+        <div id="qTxt" style="font-size:1.1rem;font-weight:600;margin-bottom:1.5rem;white-space:pre-wrap"></div>
+        <div id="optsWrap"></div>
+        <div id="fbWrap"></div>
+        <div style="display:flex; gap:10px; margin-top:1.5rem">
+            <button id="btnPrev" class="btn btn-alt" style="flex:1" onclick="prevQ()">Anterior</button>
+            <button id="btnNext" class="btn" style="flex:1" onclick="nextQ()">Siguiente</button>
+        </div>
+        <button id="btnFinishNow" class="btn btn-danger" style="width:100%" onclick="forceFinish()">Terminar Intento</button>
+        <button id="btnBackRes" class="btn btn-outline hidden" style="width:100%" onclick="showScreen('secRes')">← Volver a Resultados</button>
+    </div>
+
+    <div id="secRes" class="card hidden" style="text-align:center">
+        <h2>Resultado</h2>
+        <div id="rPct" style="font-size:4rem;font-weight:800;margin:1rem 0"></div>
+        <div style="margin-bottom:2rem">
+            Aciertos: <span id="rOk" style="color:var(--V);font-weight:700"></span> | 
+            Fallos: <span id="rKo" style="color:var(--R);font-weight:700"></span> | 
+            Blancos: <span id="rWa" style="color:var(--W);font-weight:700"></span>
+        </div>
+        <div id="resButtons" style="display:flex; flex-direction:column; gap:10px"></div>
+    </div>
+</div>
+
+<script>
+// URL vinculada a la hoja de PRUEBAS (ALUMNOS ACTIVOS)
+const apiUrl = 'https://script.google.com/macros/s/AKfycbwzQPNahJxw8YTLln-O9WaAkXoH3Vd0h7sFgugRxHX8bIEfasezvzl6ZvEENiTJMWKF/exec';
+let allQuestions = [], exam = [], idx = 0, userAnswers = [], isReviewing = false;
+let questionsWithMistakes = [], showInstantFeedback = true;
+
+function showScreen(id) {
+    document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+}
+
+function fetchJSONP(url, callback) {
+    const name = 'jsonp_' + Date.now() + Math.floor(Math.random()*1000);
+    window[name] = (data) => { delete window[name]; callback(data); };
+    const s = document.createElement('script');
+    s.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + name;
+    document.body.appendChild(s);
+}
+
+function parseTable(res) {
+    return res.rows.map(row => {
+        let obj = {};
+        res.headers.forEach((h, i) => { if(h) obj[h.toLowerCase().trim()] = row[i]; });
+        return obj;
+    });
+}
+
+function doLogin() {
+    const email = document.getElementById('inEmail').value.trim().toLowerCase();
+    const btn = document.getElementById('btnLogin');
+    if(!email) return;
+    btn.textContent = "Verificando en PRUEBAS...";
+    fetchJSONP(apiUrl + '?type=users', (res) => {
+        const users = parseTable(res);
+        // Busca el correo en la columna 'correo' de tu hoja 'Usuarios'
+        const user = users.find(u => u.correo && u.
