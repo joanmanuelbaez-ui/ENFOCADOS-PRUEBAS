@@ -4,55 +4,109 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ENFOCADOS - PRUEBAS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* --- ESTILOS VISUALES STAGING --- */
-        *{margin:0;padding:0;box-sizing:border-box}
-        :root{--Y:rgb(250,250,0);--Yd:rgb(215,215,0);--D:#2c3e50;--D2:#1a252f;--V:#10b981;--R:#ef4444;--G:#64748b;--B:#e2e8f0}
-        body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,#fffef0 0%,#fff9c4 100%);min-height:100vh;color:#1e293b;line-height:1.6;display:flex;justify-content:center;padding:20px}
-        .wrap{width:100%;max-width:800px;margin:0 auto}
-        header{text-align:center;margin-bottom:1.6rem}
-        h1{font-family:'Montserrat',sans-serif;font-size:2.5rem;font-weight:800;color:var(--D);letter-spacing:-1px}
-        .tag{background:var(--D);color:white;padding:4px 10px;border-radius:5px;font-size:0.75rem;font-weight:bold;text-transform:uppercase}
-        .card{background:#fff;border-radius:18px;padding:2rem;box-shadow:0 4px 24px rgba(0,0,0,.08);border:2px solid var(--Y);margin-bottom:1.4rem;text-align:center}
-        .field{margin-bottom:1.1rem;text-align:left}
-        .field label{display:block;margin-bottom:.3rem;color:var(--D);font-weight:600;font-size:.9rem}
-        input, select{width:100%;padding:.82rem 1rem;border:2px solid var(--B);border-radius:10px;font-size:1rem;font-family:inherit}
-        .btn{width:100%;padding:.88rem 1.5rem;background:var(--Y);color:var(--D);border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s}
-        .btn:hover:not(:disabled){background:var(--Yd);transform:translateY(-1px)}
-        .btn:disabled{background:#cbd5e1;color:#94a3b8;cursor:not-allowed}
-        .ubar{background:var(--Y);padding:.78rem 1.1rem;border-radius:10px;display:flex;justify-content:space-between;align-items:center;margin-bottom:1.4rem;font-weight:600}
-        .multi-box{border:2px solid var(--B);border-radius:10px;padding:10px;max-height:200px;overflow-y:auto;background:#f8fafc;text-align:left}
-        .m-item{display:flex;align-items:center;padding:8px;gap:10px;cursor:pointer;border-bottom:1px solid #edf2f7}
-        .m-item input{width:18px;height:18px}
-        .hidden{display:none!important}
-        #status{margin-top:10px;font-size:0.85rem;color:var(--G)}
+        body { font-family: sans-serif; background: #fff9c4; display: flex; justify-content: center; padding: 40px 20px; }
+        .card { background: white; padding: 30px; border-radius: 15px; border: 3px solid #facc15; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; margin-bottom: 5px; font-size: 2rem; }
+        input { width: 100%; padding: 12px; margin: 20px 0; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; background: #facc15; color: #2c3e50; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 1rem; }
+        button:disabled { background: #e2e8f0; cursor: not-allowed; }
+        #status { margin-top: 15px; font-size: 0.85rem; color: #64748b; min-height: 20px; }
+        .error { color: #ef4444; font-weight: bold; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div class="wrap">
-    <header>
-        <span class="tag">Staging / Entorno de Pruebas</span>
-        <h1>ENFOCADOS</h1>
-    </header>
-
-    <div id="secLogin" class="card">
-        <h2 style="margin-bottom:1.5rem">Acceso Alumnos</h2>
-        <div class="field">
-            <label>Email</label>
-            <input type="email" id="inEmail" placeholder="tu@email.com" autocomplete="email">
-        </div>
-        <button id="btnLogin" class="btn" onclick="doLogin()">ENTRAR AL SISTEMA</button>
+<div class="card">
+    <div style="background:#2c3e50; color:white; font-size:0.7rem; padding:3px; border-radius:4px; display:inline-block; margin-bottom:10px;">STAGING / MODO PRUEBAS</div>
+    <h1>ENFOCADOS</h1>
+    
+    <div id="secLogin">
+        <p>Introduce tu correo de prueba</p>
+        <input type="email" id="inEmail" placeholder="tu@email.com">
+        <button id="btnLogin" onclick="doLogin()">ENTRAR AL SISTEMA</button>
         <div id="status"></div>
     </div>
 
-    <div id="secConfig" class="card hidden">
-        <div class="ubar">
-            <span id="cfgUser"></span>
-            <span style="font-size:0.8rem;cursor:pointer;color:var(--D2)" onclick="location.reload()">SALIR</span>
+    <div id="secConfig" class="hidden">
+        <h2 style="color: #10b981;">✓ Acceso Correcto</h2>
+        <p id="welcomeMsg"></p>
+        <div style="background:#f1f5f9; padding:15px; border-radius:10px; margin:15px 0; text-align:left;">
+            <strong>Estado:</strong> Conectado a la Base de Datos.
         </div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px">
-            <div class="field">
-                <label>Nº Preguntas</label>
-                <input type="number" id="inNum" value="10" min="5" max="
+        <button onclick="location.reload()" style="background:#e2e8f0">CERRAR SESIÓN</button>
+    </div>
+</div>
+
+<script>
+// URL de tu Script de Google
+const apiUrl = 'https://script.google.com/macros/s/AKfycbwzQPNahJxw8YTLln-O9WaAkXoH3Vd0h7sFgugRxHX8bIEfasezvzl6ZvEENiTJMWKF/exec';
+
+function fetchJSONP(url, callback) {
+    const callbackName = 'jsonp_' + Math.round(100000 * Math.random());
+    window[callbackName] = function(data) {
+        delete window[callbackName];
+        document.body.removeChild(script);
+        callback(data);
+    };
+    const script = document.createElement('script');
+    script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName;
+    script.onerror = () => {
+        document.getElementById('status').innerHTML = '<span class="error">Error de conexión con el servidor.</span>';
+        document.getElementById('btnLogin').disabled = false;
+    };
+    document.body.appendChild(script);
+}
+
+function doLogin() {
+    const email = document.getElementById('inEmail').value.trim().toLowerCase();
+    const btn = document.getElementById('btnLogin');
+    const status = document.getElementById('status');
+
+    if (!email) {
+        alert("Por favor, escribe tu email.");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "VERIFICANDO...";
+    status.textContent = "Conectando con Google Sheets...";
+
+    // Llamada al script para buscar usuarios
+    fetchJSONP(apiUrl + '?type=users', function(res) {
+        if (!res || !res.rows) {
+            status.innerHTML = '<span class="error">No se recibieron datos de la hoja.</span>';
+            btn.disabled = false;
+            return;
+        }
+
+        const headers = res.headers.map(h => h.toLowerCase().trim());
+        const emailIdx = headers.indexOf('correo');
+        const userIdx = headers.indexOf('usuario');
+
+        if (emailIdx === -1) {
+            status.innerHTML = '<span class="error">No encontré la columna "correo" en tu Excel.</span>';
+            btn.disabled = false;
+            return;
+        }
+
+        // Buscar el usuario
+        const userRow = res.rows.find(row => row[emailIdx] && row[emailIdx].toLowerCase().trim() === email);
+
+        if (userRow) {
+            status.textContent = "¡Usuario encontrado!";
+            document.getElementById('secLogin').classList.add('hidden');
+            document.getElementById('secConfig').classList.remove('hidden');
+            document.getElementById('welcomeMsg').textContent = "Bienvenido/a, " + (userRow[userIdx] || "Alumno");
+        } else {
+            status.innerHTML = '<span class="error">Email no registrado en la hoja de PRUEBAS.</span>';
+            btn.disabled = false;
+            btn.textContent = "ENTRAR AL SISTEMA";
+        }
+    });
+}
+</script>
+
+</body>
+</html>
