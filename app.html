@@ -3,6 +3,168 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENFOCADOS - Plataforma de Oposiciones</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* --- ESTILOS MANTENIDOS --- */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--Y:rgb(250,250,0);--Yd:rgb(215,215,0);--D:#2c3e50;--D2:#1a252f;--V:#10b981;--R:#ef4444;--G:#64748b;--B:#e2e8f0;--W:#f59e0b}
+body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,#fffef0 0%,#fff9c4 100%);min-height:100vh;color:#1e293b;line-height:1.6}
+.wrap{max-width:860px;margin:0 auto;padding:1.8rem 1.2rem}
+header{text-align:center;margin-bottom:1.6rem}
+h1{font-family:'Montserrat',sans-serif;font-size:2.8rem;font-weight:800;color:var(--D);letter-spacing:-1px}
+.card{background:#fff;border-radius:18px;padding:2rem;box-shadow:0 4px 24px rgba(0,0,0,.08);border:2px solid var(--Y);margin-bottom:1.4rem}
+.field{margin-bottom:1.1rem;text-align:left}
+.field label{display:block;margin-bottom:.3rem;color:var(--D);font-weight:600;font-size:.9rem}
+.field input, .field select{width:100%;padding:.82rem 1rem;border:2px solid var(--B);border-radius:10px;font-size:1rem}
+.btn{width:100%;padding:.88rem 1.5rem;background:var(--Y);color:var(--D);border:none;border-radius:10px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:all .2s}
+.btn:disabled{background:#cbd5e1;cursor:not-allowed}
+.error-banner{background:#fee2e2;color:#b91c1c;padding:1rem;border-radius:10px;margin-bottom:1rem;border:1px solid #f87171;font-size:0.9rem;display:none}
+.hidden{display:none!important}
+/* ... (Resto de estilos del archivo original) ... */
+</style>
+</head>
+<body>
+
+<div class="wrap">
+    <header>
+        <h1>ENFOCADOS</h1>
+        <div style="color:var(--G); font-weight:bold; font-size:0.8rem">MODO PRUEBAS</div>
+    </header>
+
+    <div id="errBanner" class="error-banner"></div>
+
+    <div id="secLogin" class="card">
+        <h2 style="text-align:center;margin-bottom:1.5rem">Acceso</h2>
+        <div class="field">
+            <label>Email de alumno activo</label>
+            <input type="email" id="inEmail" placeholder="tu@email.com">
+        </div>
+        <button id="btnLogin" class="btn" onclick="doLogin()">Entrar</button>
+    </div>
+
+    <div id="secConfig" class="card hidden">
+        <div id="cfgUser" style="font-weight:bold; margin-bottom:10px"></div>
+        <div id="multiMat" class="field"></div>
+        <button id="btnStart" class="btn" onclick="startExam()">Comenzar Test</button>
+    </div>
+</div>
+
+<script>
+// URL del Script de Pruebas
+const apiUrl = 'https://script.google.com/macros/s/AKfycbwzQPNahJxw8YTLln-O9WaAkXoH3Vd0h7sFgugRxHX8bIEfasezvzl6ZvEENiTJMWKF/exec';
+
+let allQuestions = [], exam = [], idx = 0, userAnswers = [];
+
+// --- LA FUNCIÓN DE CONEXIÓN CORREGIDA ---
+function fetchJSONP(url) {
+    return new Promise((resolve, reject) => {
+        const callbackName = 'jsonp_' + Math.round(100000 * Math.random());
+        const script = document.createElement('script');
+        
+        // Timeout de seguridad: si en 10 seg no responde, falla.
+        const timeout = setTimeout(() => {
+            cleanup();
+            reject(new Error("Tiempo de espera agotado (Servidor lento)"));
+        }, 10000);
+
+        function cleanup() {
+            clearTimeout(timeout);
+            if (script.parentNode) script.parentNode.removeChild(script);
+            delete window[callbackName];
+        }
+
+        window[callbackName] = function(data) {
+            cleanup();
+            resolve(data);
+        };
+
+        script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName + '&t=' + Date.now();
+        script.onerror = () => {
+            cleanup();
+            reject(new Error("Error de red o Script bloqueado"));
+        };
+        document.body.appendChild(script);
+    });
+}
+
+// Lógica de Login mejorada
+async function doLogin() {
+    const email = document.getElementById('inEmail').value.trim().toLowerCase();
+    const btn = document.getElementById('btnLogin');
+    const banner = document.getElementById('errBanner');
+
+    if (!email) return;
+
+    banner.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = "Verificando...";
+
+    try {
+        // 1. Cargar Usuarios
+        const resUsers = await fetchJSONP(apiUrl + '?type=users');
+        const users = parseTable(resUsers);
+        
+        // Buscamos CORREO (normalizado por parseTable)
+        const user = users.find(u => (u.correo || u.email || '').toLowerCase().trim() === email);
+
+        if (!user) {
+            throw new Error("El email no está registrado como alumno activo.");
+        }
+
+        // 2. Cargar Preguntas
+        btn.textContent = "Cargando Banco...";
+        const resQ = await fetchJSONP(apiUrl + '?type=questions');
+        allQuestions = parseTable(resQ);
+
+        // 3. Éxito
+        document.getElementById('cfgUser').textContent = "Bienvenido, " + (user.usuario || "Alumno");
+        setupMats(); // Esta función debe estar definida abajo
+        showScreen('secConfig');
+
+    } catch (err) {
+        banner.textContent = err.message;
+        banner.style.display = 'block';
+        console.error(err);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Entrar";
+    }
+}
+
+function parseTable(res) {
+    if (!res || !res.rows || !res.headers) return [];
+    return res.rows.map(row => {
+        let obj = {};
+        res.headers.forEach((h, i) => {
+            if (h) obj[h.toLowerCase().trim()] = row[i];
+        });
+        return obj;
+    });
+}
+
+function showScreen(id) {
+    document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+}
+
+function setupMats() {
+    const mats = [...new Set(allQuestions.map(q => q.materia).filter(m => m))].sort();
+    const container = document.getElementById('multiMat');
+    container.innerHTML = "<strong>Selecciona Materias:</strong><br>";
+    mats.forEach(m => {
+        container.innerHTML += `<label style="display:block; margin:5px 0;"><input type="checkbox" name="materia" value="${m}" checked> ${m}</label>`;
+    });
+}
+
+// Aquí irían tus funciones de startExam, showQ, etc. (mantén las del archivo original)
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ENFOCADOS - STAGING (PRUEBAS)</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
