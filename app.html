@@ -1,102 +1,89 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ENFOCADOS - STAGING</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-/* --- ESTILOS CRÍTICOS --- */
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--Y:rgb(250,250,0);--Yd:rgb(215,215,0);--D:#2c3e50;--D2:#1a252f;--V:#10b981;--R:#ef4444;--G:#64748b;--B:#e2e8f0;--W:#f59e0b}
-body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,#fffef0 0%,#fff9c4 100%);min-height:100vh;color:#1e293b}
-.wrap{max-width:860px;margin:0 auto;padding:1.8rem 1.2rem}
-header{text-align:center;margin-bottom:1.6rem}
-h1{font-family:'Montserrat',sans-serif;font-size:2.8rem;font-weight:800;color:var(--D)}
-.card{background:#fff;border-radius:18px;padding:2rem;box-shadow:0 4px 24px rgba(0,0,0,.08);border:2px solid var(--Y);margin-bottom:1.4rem}
-.field{margin-bottom:1.1rem}
-.field label{display:block;margin-bottom:.3rem;font-weight:600}
-.field input, .field select{width:100%;padding:.8rem;border:2px solid var(--B);border-radius:10px;font-size:1rem}
-.btn{width:100%;padding:.9rem;background:var(--Y);color:var(--D);border:none;border-radius:10px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:.2s}
-.btn:disabled{background:#cbd5e1;cursor:not-allowed}
-.error-banner{background:#fee2e2;color:#b91c1c;padding:1rem;border-radius:10px;margin-bottom:1rem;border:1px solid #f87171;display:none;text-align:center}
-.ubar{background:linear-gradient(135deg,var(--Y),rgb(255,255,100));padding:1rem;border-radius:10px;display:flex;justify-content:space-between;margin-bottom:1.4rem;font-weight:700}
-.multi-box{border:2px solid var(--B);border-radius:10px;padding:10px;max-height:200px;overflow-y:auto;background:#f8fafc}
-.m-item{display:flex;align-items:center;padding:8px;gap:10px;border-bottom:1px solid #edf2f7}
-.qhdr{display:flex;justify-content:space-between;margin-bottom:1rem;border-bottom:2px solid var(--Y)}
-.pbar-bg{background:var(--B);height:6px;margin-bottom:1.2rem;border-radius:3px;overflow:hidden}
-.pbar{background:var(--Y);height:100%;width:0%;transition:width .3s}
-.opt{display:flex;align-items:center;gap:.8rem;padding:1rem;border:2px solid var(--B);border-radius:11px;cursor:pointer;margin-bottom:10px}
-.opt.ok{border-color:var(--V);background:#f0fdf4}
-.opt.ko{border-color:var(--R);background:#fef2f2}
-.oltr{width:30px;height:30px;border-radius:50%;background:var(--B);display:flex;align-items:center;justify-content:center;font-weight:700}
-.fb{margin-top:1.3rem;padding:1.2rem;border-radius:10px;border-left:4px solid}
-.fb.ok{background:#f0fdf4;border-color:var(--V)}
-.fb.ko{background:#fef2f2;border-color:var(--R)}
-.hidden{display:none!important}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENFOCADOS - ACCESO</title>
+    <style>
+        body { font-family: sans-serif; background: #fff9c4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; border: 2px solid #facc15; text-align: center; }
+        h1 { color: #2c3e50; margin-bottom: 1.5rem; }
+        input { width: 100%; padding: 10px; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #facc15; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: #2c3e50; }
+        .error { color: red; margin-top: 10px; display: none; }
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
 
-<div class="wrap">
-    <header>
-        <h1>ENFOCADOS</h1>
-        <div style="color:var(--G); font-weight:bold; font-size:0.8rem">MODO PRUEBAS ACTIVADO</div>
-    </header>
-
-    <div id="errBanner" class="error-banner"></div>
-
     <div id="secLogin" class="card">
-        <h2 style="text-align:center;margin-bottom:1.5rem">Acceso Alumno</h2>
-        <div class="field">
-            <label>Email del alumno</label>
-            <input type="email" id="inEmail" placeholder="ejemplo@correo.com">
-        </div>
-        <button id="btnLogin" class="btn" onclick="doLogin()">Entrar al Sistema</button>
+        <h1>ENFOCADOS</h1>
+        <p style="margin-bottom: 1rem; color: #666;">Introduce tu email para entrar</p>
+        <input type="email" id="inEmail" placeholder="tu@email.com">
+        <button id="btnLogin" onclick="doLogin()">Entrar al Sistema</button>
+        <div id="errLog" class="error"></div>
     </div>
 
     <div id="secConfig" class="card hidden">
-        <div class="ubar"><span id="cfgUser"></span><span onclick="location.reload()" style="cursor:pointer">SALIR</span></div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px">
-            <div class="field">
-                <label>Nº Preguntas</label>
-                <input type="number" id="inNum" value="10" min="5">
-            </div>
-            <div class="field">
-                <label>Explicaciones</label>
-                <select id="inFeedback">
-                    <option value="con">Activadas</option>
-                    <option value="sin">Desactivadas</option>
-                </select>
-            </div>
-        </div>
-        <div class="field">
-            <label>Selecciona Materias</label>
-            <div id="multiMat" class="multi-box"></div>
-        </div>
-        <button id="btnStart" class="btn" onclick="startExam()">Comenzar Test</button>
+        <h1>¡Bienvenido!</h1>
+        <p>Conexión establecida con éxito.</p>
+        <button onclick="location.reload()">Cerrar sesión</button>
     </div>
 
-    <div id="secQ" class="card hidden">
-        <div class="qhdr"><span id="qNum"></span><span id="qProg"></span></div>
-        <div class="pbar-bg"><div id="pBar" class="pbar"></div></div>
-        <div id="qTxt" style="font-size:1.1rem;font-weight:600;margin-bottom:1.5rem"></div>
-        <div id="optsWrap"></div>
-        <div id="fbWrap"></div>
-        <div style="display:flex; gap:10px; margin-top:1.5rem">
-            <button class="btn" style="background:var(--B)" onclick="prevQ()">Anterior</button>
-            <button id="btnNext" class="btn" onclick="nextQ()">Siguiente</button>
-        </div>
-    </div>
+    <script>
+        const API = 'https://script.google.com/macros/s/AKfycbwMfcGPg0LUHYV-n28R90oBZX6EIY7iEdWuTgLADe7YkuB9dVzokVOF4LoHusR5_mdY/exec';
 
-    <div id="secRes" class="card hidden" style="text-align:center">
-        <h2>Resultado Final</h2>
-        <div id="rPct" style="font-size:4rem;font-weight:800;margin:1rem 0"></div>
-        <div id="resDetalle" style="margin-bottom:2rem"></div>
-        <button class="btn" onclick="location.reload()">Nuevo Test</button>
-    </div>
-</div>
+        async function doLogin() {
+            const email = document.getElementById('inEmail').value.trim().toLowerCase();
+            const btn = document.getElementById('btnLogin');
+            const err = document.getElementById('errLog');
 
-<script>
-// URL de tu Script de Google
-const apiUrl = 'https://
+            if (!email) { alert("Escribe tu email"); return; }
+
+            btn.disabled = true;
+            btn.innerText = "Cargando...";
+            err.style.display = 'none';
+
+            try {
+                // Usamos una técnica de carga ultra-simple
+                const callbackName = 'jsonp_' + Date.now();
+                const script = document.createElement('script');
+                
+                window[callbackName] = function(data) {
+                    delete window[callbackName];
+                    document.head.removeChild(script);
+                    validarUsuario(data, email);
+                };
+
+                script.src = `${API}?type=users&callback=${callbackName}`;
+                document.head.appendChild(script);
+
+            } catch (e) {
+                btn.disabled = false;
+                btn.innerText = "Entrar al Sistema";
+                err.innerText = "Error de conexión";
+                err.style.display = 'block';
+            }
+        }
+
+        function validarUsuario(data, email) {
+            const btn = document.getElementById('btnLogin');
+            const err = document.getElementById('errLog');
+            
+            // Buscar el email en las filas (la columna del email suele ser la segunda [1])
+            const filas = data.rows || [];
+            const encontrado = filas.some(fila => fila.join(',').toLowerCase().includes(email));
+
+            if (encontrado) {
+                document.getElementById('secLogin').classList.add('hidden');
+                document.getElementById('secConfig').classList.remove('hidden');
+            } else {
+                btn.disabled = false;
+                btn.innerText = "Entrar al Sistema";
+                err.innerText = "Email no encontrado en la base de datos";
+                err.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
