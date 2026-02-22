@@ -40,21 +40,27 @@
 </div>
 
 <script>
-// URL de tu Script de Google
+// URL de tu Script de Google confirmada
 const apiUrl = 'https://script.google.com/macros/s/AKfycbwzQPNahJxw8YTLln-O9WaAkXoH3Vd0h7sFgugRxHX8bIEfasezvzl6ZvEENiTJMWKF/exec';
 
 function fetchJSONP(url, callback) {
     const callbackName = 'jsonp_' + Math.round(100000 * Math.random());
     window[callbackName] = function(data) {
         delete window[callbackName];
-        document.body.removeChild(script);
+        const oldScript = document.getElementById(callbackName);
+        if (oldScript) oldScript.remove();
         callback(data);
     };
+
     const script = document.createElement('script');
-    script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName;
+    script.id = callbackName;
+    // Agregamos t=Date.now para evitar el caché del navegador que causa errores de conexión
+    script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName + '&t=' + Date.now();
+    
     script.onerror = () => {
-        document.getElementById('status').innerHTML = '<span class="error">Error de conexión con el servidor.</span>';
+        document.getElementById('status').innerHTML = '<span class="error">Error de conexión. Verifica que el script esté publicado como "Cualquier persona".</span>';
         document.getElementById('btnLogin').disabled = false;
+        document.getElementById('btnLogin').textContent = "REINTENTAR ENTRAR";
     };
     document.body.appendChild(script);
 }
@@ -76,37 +82,11 @@ function doLogin() {
     // Llamada al script para buscar usuarios
     fetchJSONP(apiUrl + '?type=users', function(res) {
         if (!res || !res.rows) {
-            status.innerHTML = '<span class="error">No se recibieron datos de la hoja.</span>';
+            status.innerHTML = '<span class="error">Error: No se recibieron datos. Revisa permisos del script.</span>';
             btn.disabled = false;
+            btn.textContent = "ENTRAR AL SISTEMA";
             return;
         }
 
         const headers = res.headers.map(h => h.toLowerCase().trim());
-        const emailIdx = headers.indexOf('correo');
-        const userIdx = headers.indexOf('usuario');
-
-        if (emailIdx === -1) {
-            status.innerHTML = '<span class="error">No encontré la columna "correo" en tu Excel.</span>';
-            btn.disabled = false;
-            return;
-        }
-
-        // Buscar el usuario
-        const userRow = res.rows.find(row => row[emailIdx] && row[emailIdx].toLowerCase().trim() === email);
-
-        if (userRow) {
-            status.textContent = "¡Usuario encontrado!";
-            document.getElementById('secLogin').classList.add('hidden');
-            document.getElementById('secConfig').classList.remove('hidden');
-            document.getElementById('welcomeMsg').textContent = "Bienvenido/a, " + (userRow[userIdx] || "Alumno");
-        } else {
-            status.innerHTML = '<span class="error">Email no registrado en la hoja de PRUEBAS.</span>';
-            btn.disabled = false;
-            btn.textContent = "ENTRAR AL SISTEMA";
-        }
-    });
-}
-</script>
-
-</body>
-</html>
+        const email
