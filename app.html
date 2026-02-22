@@ -8,21 +8,21 @@
     <style>
         /* --- ESTILOS --- */
         *{margin:0;padding:0;box-sizing:border-box}
-        :root{--Y:rgb(250,250,0);--Yd:rgb(215,215,0);--D:#2c3e50;--V:#10b981;--R:#ef4444;--G:#64748b;--B:#e2e8f0}
-        body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,#fffef0 0%,#fff9c4 100%);min-height:100vh;color:#1e293b}
+        :root{--Y:rgb(250,250,0);--D:#2c3e50;--V:#10b981;--R:#ef4444;--B:#e2e8f0}
+        body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,#fffef0 0%,#fff9c4 100%);min-height:100vh}
         .wrap{max-width:860px;margin:0 auto;padding:1.8rem 1.2rem}
         header{text-align:center;margin-bottom:1.6rem}
         h1{font-family:'Montserrat',sans-serif;font-size:2.8rem;font-weight:800;color:var(--D)}
         .card{background:#fff;border-radius:18px;padding:2rem;box-shadow:0 4px 24px rgba(0,0,0,.08);border:2px solid var(--Y);margin-bottom:1.4rem}
         .field{margin-bottom:1.1rem}
         .field label{display:block;margin-bottom:.3rem;font-weight:600}
-        .field input, .field select{width:100%;padding:.8rem;border:2px solid var(--B);border-radius:10px;font-size:1rem;width:100%}
-        .btn{width:100%;padding:.9rem;background:var(--Y);color:var(--D);border:none;border-radius:10px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:.2s;margin-top:10px}
+        .field input, .field select{width:100%;padding:.8rem;border:2px solid var(--B);border-radius:10px;font-size:1rem}
+        .btn{width:100%;padding:.9rem;background:var(--Y);color:var(--D);border:none;border-radius:10px;font-size:1.05rem;font-weight:700;cursor:pointer}
         .btn:disabled{background:#cbd5e1;cursor:not-allowed}
         .error-banner{background:#fee2e2;color:#b91c1c;padding:1rem;border-radius:10px;margin-bottom:1rem;border:1px solid #f87171;display:none;text-align:center}
         .ubar{background:var(--D);color:white;padding:1rem;border-radius:10px;display:flex;justify-content:space-between;margin-bottom:1.4rem}
         .multi-box{border:2px solid var(--B);border-radius:10px;padding:10px;max-height:200px;overflow-y:auto;background:#f8fafc}
-        .m-item{display:flex;align-items:center;padding:8px;gap:10px;border-bottom:1px solid #edf2f7;cursor:pointer}
+        .m-item{display:flex;align-items:center;padding:8px;gap:10px;border-bottom:1px solid #edf2f7}
         .opt{display:flex;align-items:center;gap:.8rem;padding:1rem;border:2px solid var(--B);border-radius:11px;cursor:pointer;margin-bottom:10px;background:white}
         .opt.ok{border-color:var(--V);background:#f0fdf4}
         .opt.ko{border-color:var(--R);background:#fef2f2}
@@ -73,4 +73,138 @@
 </div>
 
 <script>
-const API = '
+const API = 'https://script.google.com/macros/s/AKfycbw9MQnIJS-S0TEvukVEeHPAm11lKca1-c6BuT4V7ZqMr1X93m7P7Q5izKlXiSyrdHIz/exec';
+
+let allQuestions = [], exam = [], idx = 0, userAnswers = [], showInstantFeedback = true;
+
+function callGAS(type) {
+    return new Promise((resolve, reject) => {
+        const cb = 'jsonp_' + Math.round(Math.random() * 1000000);
+        const s = document.createElement('script');
+        window[cb] = (data) => { delete window[cb]; s.remove(); resolve(data); };
+        s.src = `${API}?type=${type}&callback=${cb}&t=${Date.now()}`;
+        s.onerror = () => reject(new Error("Error de conexión"));
+        document.head.appendChild(s);
+        setTimeout(() => { if(window[cb]) reject(new Error("Tiempo agotado")); }, 25000);
+    });
+}
+
+async function doLogin() {
+    const email = document.getElementById('inEmail').value.trim().toLowerCase();
+    const btn = document.getElementById('btnLogin');
+    const banner = document.getElementById('errBanner');
+    if(!email) return;
+    
+    btn.disabled = true; btn.innerText = "Verificando..."; banner.style.display = 'none';
+
+    try {
+        const resU = await callGAS('users');
+        if(!resU || !resU.rows) throw new Error("No se recibieron datos de usuarios");
+
+        // Normalizamos encabezados para que coincidan siempre
+        const headers = resU.headers.map(h => h.toString().toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, ''));
+
+        const users = resU.rows.map(r => {
+            let o = {}; headers.forEach((h, i) => o[h] = r[i]);
+            return o;
+        });
+
+        // Buscamos el email en la columna 'correo' o 'email'
+        const user = users.find(u => 
+            (u.correo && u.correo.toLowerCase() === email) || 
+            (u.email && u.email.toLowerCase() === email)
+        );
+
+        if(!user) throw new Error("Email no autorizado: " + email);
+
+        const resQ = await callGAS('questions');
+        if(!resQ || !resQ.rows) throw new Error("No se pudieron cargar las preguntas");
+
+        const qHeaders = resQ.headers.map(h => h.toString().toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, ''));
+
+        allQuestions = resQ.rows.map(r => {
+            let o = {}; qHeaders.forEach((h, i) => o[h] = r[i]);
+            return o;
+        });
+
+        document.getElementById('cfgUser').innerText = (user.usuario || "ALUMNO").toUpperCase();
+        setupMats();
+        showScreen('secConfig');
+    } catch(e) {
+        banner.innerText = e.message; banner.style.display = 'block';
+        btn.disabled = false; btn.innerText = "Entrar";
+    }
+}
+
+function setupMats() {
+    const mats = [...new Set(allQuestions.map(q => q.materia).filter(m => m))].sort();
+    const cont = document.getElementById('multiMat');
+    cont.innerHTML = "";
+    mats.forEach(m => {
+        cont.innerHTML += `<label class="m-item"><input type="checkbox" name="mat" value="${m}" checked> ${m}</label>`;
+    });
+}
+
+function startExam() {
+    const num = parseInt(document.getElementById('inNum').value) || 10;
+    showInstantFeedback = document.getElementById('inFeedback').value === "con";
+    const sel = Array.from(document.querySelectorAll('input[name="mat"]:checked')).map(c => c.value);
+    let pool = allQuestions.filter(q => sel.includes(q.materia));
+    if(pool.length === 0) return alert("Selecciona una materia");
+    exam = pool.sort(() => 0.5 - Math.random()).slice(0, num);
+    idx = 0; userAnswers = new Array(exam.length).fill(null);
+    showQ(); showScreen('secQ');
+}
+
+function showQ() {
+    const q = exam[idx]; const ans = userAnswers[idx];
+    const wrap = document.getElementById('optsWrap');
+    document.getElementById('qTxt').innerText = q.pregunta;
+    wrap.innerHTML = ""; document.getElementById('fbWrap').innerHTML = "";
+    const letras = ['A','B','C','D'];
+    const correcta = (q.respuesta||"").toString().trim().toUpperCase();
+    const opciones = (q.opciones||"").split('\n').filter(o => o.trim());
+
+    opciones.forEach((txt, i) => {
+        const L = letras[i];
+        const d = document.createElement('div');
+        d.className = 'opt';
+        if(ans && showInstantFeedback) {
+            if(L === correcta) d.className = 'opt ok';
+            else if(L === ans) d.className = 'opt ko';
+        } else if(ans === L) {
+            d.style.borderColor = "var(--D)";
+        }
+        d.innerHTML = `<div class="oltr">${L}</div><div style="flex:1">${txt}</div>`;
+        d.onclick = () => { if(!ans || !showInstantFeedback) { userAnswers[idx] = L; showQ(); } };
+        wrap.appendChild(d);
+    });
+
+    if(ans && showInstantFeedback) {
+        const ok = ans === correcta;
+        document.getElementById('fbWrap').innerHTML = `<div class="fb ${ok?'ok':'ko'}"><b>${ok?'¡Correcto!':'Incorrecto'}</b><br>${q.saber || q.explicacion || 'Respuesta: '+correcta}</div>`;
+    }
+}
+
+function nextQ() { if(idx < exam.length-1){ idx++; showQ(); } else { finish(); } }
+function prevQ() { if(idx > 0){ idx--; showQ(); } }
+
+function finish() {
+    let oks = 0;
+    exam.forEach((q, i) => { 
+        if(userAnswers[i] === (q.respuesta||"").toString().trim().toUpperCase()) oks++; 
+    });
+    document.getElementById('rPct').innerText = Math.round(oks/exam.length*100) + "%";
+    showScreen('secRes');
+}
+
+function showScreen(id) {
+    document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+    window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
