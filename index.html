@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ENFOCADOS</title>
+<title>ENFOCADOS - PRUEBAS</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+/* Estilos Quirúrgicos */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{--Y:#FAFA00;--Yd:#E0E000;--D:#2C3E50;--D2:#1A252F;--V:#10B981;--R:#EF4444;--N:#F59E0B;--G:#64748B;--B:#E2E8F0;--F:#F8FAFC}
 body{font-family:'Inter',sans-serif;background:linear-gradient(150deg,#FFFEF0,#FFF9C4);min-height:100vh;color:#1E293B;line-height:1.6}
@@ -13,7 +14,7 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(150deg,#FFFEF0,#F
 header{text-align:center;margin-bottom:1.8rem}.titulo{font-family:'Montserrat',sans-serif;font-size:2.2rem;font-weight:800;color:var(--D);letter-spacing:-1px;text-transform:uppercase}
 .card{background:#fff;border-radius:20px;padding:2rem;box-shadow:0 10px 25px rgba(0,0,0,0.05);border:2px solid var(--Y);margin-bottom:1.5rem;position:relative;overflow:hidden}
 .field{margin-bottom:1.2rem}.field label{display:block;margin-bottom:0.5rem;font-weight:600;font-size:0.9rem;color:var(--G)}
-.field input, .field select{width:100%;padding:0.8rem 1rem;border:2px solid var(--B);border-radius:12px;font-family:inherit;font-size:1rem;transition:all 0.2s}
+.field input{width:100%;padding:0.8rem 1rem;border:2px solid var(--B);border-radius:12px;font-family:inherit;font-size:1rem;transition:all 0.2s}
 .btn{width:100%;padding:1rem;background:var(--Y);color:var(--D);border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:0.5rem}
 .btn:hover{background:var(--Yd);transform:translateY(-1px)}.btn:disabled{background:var(--B);color:var(--G);cursor:not-allowed}
 .error-box{background:#FEF2F2;color:var(--R);padding:1rem;border-radius:12px;border:1px solid #FEE2E2;margin-bottom:1rem;font-size:0.9rem;display:none}
@@ -22,26 +23,31 @@ header{text-align:center;margin-bottom:1.8rem}.titulo{font-family:'Montserrat',s
 </head>
 <body>
 <div class="wrap">
-  <header><div class="titulo">ENFOCADOS PRUEBAS</div></header>
+  <header>
+    <div class="titulo">ENFOCADOS</div>
+    <div style="font-size:0.85rem;font-weight:600;color:var(--G)">ENTORNO DE PRUEBAS</div>
+  </header>
+
   <div id="pLog" class="card">
     <div id="logErr" class="error-box"></div>
     <div class="field">
       <label>Tu correo electrónico</label>
       <input type="email" id="inEmail" placeholder="ejemplo@correo.com">
     </div>
-    <button id="btnLog" class="btn" onclick="login()">PROBAR ACCESO</button>
+    <button id="btnLog" class="btn" onclick="login()">PROBAR CONEXIÓN</button>
   </div>
+
   <div id="pCfg" class="card hidden">
     <h2 id="uNom" style="margin-bottom:1rem"></h2>
     <p style="color:var(--V);font-weight:700;font-size:1.2rem">✔️ CONEXIÓN EXITOSA</p>
-    <p style="margin-top:10px;color:var(--G)">Los datos de "0 - BD GLOBAL" se han cargado.</p>
-    <button class="btn" style="margin-top:1.5rem;background:var(--F)" onclick="location.reload()">CERRAR SESIÓN</button>
+    <p style="margin-top:10px;color:var(--G)">Los datos de la hoja <strong>"0 - BD GLOBAL"</strong> se están leyendo correctamente.</p>
+    <button class="btn" style="margin-top:1.5rem;background:var(--F);color:var(--G)" onclick="location.reload()">CERRAR SESIÓN</button>
   </div>
 </div>
 
 <script>
-// ⚠️ LÍNEA CRUCIAL: Reemplaza las letras de abajo por tu URL que termina en /exec
-var GAS = 'AQUÍ_PEGA_TU_NUEVA_URL_QUE_TERMINA_EN_EXEC';
+// URL generada en el Paso 2
+var GAS = 'https://script.google.com/macros/s/AKfycbw9MQnIJS-S0TEvukVEeHPAm11lKca1-c6BuT4V7ZqMr1X93m7P7Q5izKlXiSyrdHIz/exec';
 
 function call(type, cb) {
   var id = 'jsonp_' + Date.now();
@@ -63,18 +69,19 @@ function login() {
   if(!em) return;
 
   btn.disabled = true;
-  btn.textContent = 'Conectando...';
+  btn.textContent = 'Verificando en Google...';
   err.style.display = 'none';
 
   call('users', function(res){
     if (res.status === 'error') {
-      err.textContent = res.message;
+      err.textContent = 'Error del Servidor: ' + res.message;
       err.style.display = 'block';
       btn.disabled = false;
-      btn.textContent = 'PROBAR ACCESO';
+      btn.textContent = 'PROBAR CONEXIÓN';
       return;
     }
     
+    // Buscar email en la columna CORREO
     var h = res.headers.map(function(s){ return s.toString().toUpperCase().trim(); });
     var mIdx = h.indexOf("CORREO");
     var user = res.rows.find(function(r){ return r[mIdx] && r[mIdx].toString().toLowerCase().trim() === em; });
@@ -84,10 +91,10 @@ function login() {
       document.getElementById('pLog').classList.add('hidden');
       document.getElementById('pCfg').classList.remove('hidden');
     } else {
-      err.textContent = 'Email no encontrado en la hoja.';
+      err.textContent = 'Email no encontrado en ALUMNO_ACTIVOS.';
       err.style.display = 'block';
       btn.disabled = false;
-      btn.textContent = 'PROBAR ACCESO';
+      btn.textContent = 'PROBAR CONEXIÓN';
     }
   });
 }
