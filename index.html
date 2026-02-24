@@ -1,27 +1,96 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENFOCADOS - Entorno de Pruebas</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        /* Estilos visuales del entorno de pruebas */
-        *{margin:0;padding:0;box-sizing:border-box}
-        :root{--Y:rgb(250,250,0);--Yd:rgb(215,215,0);--D:#2c3e50;--D2:#1a252f;--V:#10b981;--R:#ef4444;--G:#64748b;--B:#e2e8f0;--W:#f59e0b}
-        body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,#fffef0 0%,#fff9c4 100%);min-height:100vh;color:#1e293b}
-        .wrap{max-width:860px;margin:0 auto;padding:1.8rem 1.2rem}
-        header{text-align:center;margin-bottom:1.6rem}
-        h1{font-family:'Montserrat',sans-serif;font-size:2.8rem;font-weight:800;color:var(--D)}
-        .card{background:#fff;border-radius:18px;padding:2rem;box-shadow:0 4px 24px rgba(0,0,0,.08);border:2px solid var(--Y);margin-bottom:1.4rem}
-        .field{margin-bottom:1.1rem}
-        .field label{display:block;margin-bottom:.3rem;font-weight:600}
-        .field input, .field select{width:100%;padding:.82rem;border:2px solid var(--B);border-radius:10px;font-size:1rem}
-        .btn{width:100%;padding:.9rem;background:var(--Y);color:var(--D);border:none;border-radius:10px;font-size:1.05rem;font-weight:700;cursor:pointer;font-family:'Montserrat'}
-        .btn:disabled{background:#cbd5e1;color:#94a3b8;cursor:not-allowed}
-        .ubar{background:linear-gradient(135deg,var(--Y),rgb(255,255,100));padding:.78rem;border-radius:10px;display:flex;justify-content:space-between;margin-bottom:1.4rem;font-weight:600}
-        .multi-box{border:2px solid var(--B);border-radius:10px;padding:10px;max-height:200px;overflow-y:auto;background:#f8fafc}
-        .m-item{display:flex;align-items:center;padding:8px;gap:10px;border-bottom:1px solid #edf2f7}
-        .pbar-bg{background:var(--B);border-radius:4px;height:6px;margin-bottom:1.2rem;overflow:hidden}
-        .pbar{background:var(--Y);height:100%;transition:width .4s}
-        .opt{display:flex;align
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENFOCADOS</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--Y:#FAFA00;--Yd:#E0E000;--D:#2C3E50;--D2:#1A252F;--V:#10B981;--R:#EF4444;--N:#F59E0B;--G:#64748B;--B:#E2E8F0;--F:#F8FAFC}
+body{font-family:'Inter',sans-serif;background:linear-gradient(150deg,#FFFEF0,#FFF9C4);min-height:100vh;color:#1E293B;line-height:1.6}
+.wrap{max-width:820px;margin:0 auto;padding:2rem 1.2rem}
+header{text-align:center;margin-bottom:1.8rem}.titulo{font-family:'Montserrat',sans-serif;font-size:2.2rem;font-weight:800;color:var(--D);letter-spacing:-1px;text-transform:uppercase}
+.card{background:#fff;border-radius:20px;padding:2rem;box-shadow:0 10px 25px rgba(0,0,0,0.05);border:2px solid var(--Y);margin-bottom:1.5rem;position:relative;overflow:hidden}
+.field{margin-bottom:1.2rem}.field label{display:block;margin-bottom:0.5rem;font-weight:600;font-size:0.9rem;color:var(--G)}
+.field input, .field select{width:100%;padding:0.8rem 1rem;border:2px solid var(--B);border-radius:12px;font-family:inherit;font-size:1rem;transition:all 0.2s}
+.btn{width:100%;padding:1rem;background:var(--Y);color:var(--D);border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:0.5rem}
+.btn:hover{background:var(--Yd);transform:translateY(-1px)}.btn:disabled{background:var(--B);color:var(--G);cursor:not-allowed}
+.error-box{background:#FEF2F2;color:var(--R);padding:1rem;border-radius:12px;border:1px solid #FEE2E2;margin-bottom:1rem;font-size:0.9rem;display:none}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><div class="titulo">ENFOCADOS PRUEBAS</div></header>
+  <div id="pLog" class="card">
+    <div id="logErr" class="error-box"></div>
+    <div class="field">
+      <label>Tu correo electrónico</label>
+      <input type="email" id="inEmail" placeholder="ejemplo@correo.com">
+    </div>
+    <button id="btnLog" class="btn" onclick="login()">PROBAR ACCESO</button>
+  </div>
+  <div id="pCfg" class="card hidden">
+    <h2 id="uNom" style="margin-bottom:1rem"></h2>
+    <p style="color:var(--V);font-weight:700;font-size:1.2rem">✔️ CONEXIÓN EXITOSA</p>
+    <p style="margin-top:10px;color:var(--G)">Los datos de "0 - BD GLOBAL" se han cargado.</p>
+    <button class="btn" style="margin-top:1.5rem;background:var(--F)" onclick="location.reload()">CERRAR SESIÓN</button>
+  </div>
+</div>
+
+<script>
+// ⚠️ LÍNEA CRUCIAL: Reemplaza las letras de abajo por tu URL que termina en /exec
+var GAS = 'AQUÍ_PEGA_TU_NUEVA_URL_QUE_TERMINA_EN_EXEC';
+
+function call(type, cb) {
+  var id = 'jsonp_' + Date.now();
+  var script = document.createElement('script');
+  script.id = id;
+  window[id] = function(data) {
+    document.getElementById(id).remove();
+    delete window[id];
+    cb(data);
+  };
+  script.src = GAS + '?type=' + type + '&callback=' + id;
+  document.head.appendChild(script);
+}
+
+function login() {
+  var em = document.getElementById('inEmail').value.trim().toLowerCase();
+  var btn = document.getElementById('btnLog');
+  var err = document.getElementById('logErr');
+  if(!em) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Conectando...';
+  err.style.display = 'none';
+
+  call('users', function(res){
+    if (res.status === 'error') {
+      err.textContent = res.message;
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'PROBAR ACCESO';
+      return;
+    }
+    
+    var h = res.headers.map(function(s){ return s.toString().toUpperCase().trim(); });
+    var mIdx = h.indexOf("CORREO");
+    var user = res.rows.find(function(r){ return r[mIdx] && r[mIdx].toString().toLowerCase().trim() === em; });
+
+    if(user) {
+      document.getElementById('uNom').textContent = "HOLA, " + user[0];
+      document.getElementById('pLog').classList.add('hidden');
+      document.getElementById('pCfg').classList.remove('hidden');
+    } else {
+      err.textContent = 'Email no encontrado en la hoja.';
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'PROBAR ACCESO';
+    }
+  });
+}
+</script>
+</body>
+</html>
